@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Esca</string>
+    <string name="recipes">Recipes</string>
+    <string name="Followers">Followers</string>
+    <string name="Following">Following</string>
+    <string name="random_number">59</string>
+</resources>
