@@ -10,6 +10,16 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
 
+        <activity android:name=".activities.FoodFeedActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <service android:name=".Services.escaWS.recipes.RetrieveAllRecipes"/>
+
     </application>
 
 </manifest>
