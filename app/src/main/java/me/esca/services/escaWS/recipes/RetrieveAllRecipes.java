@@ -1,10 +1,12 @@
-package me.esca.Services.escaWS.recipes;
+package me.esca.services.escaWS.recipes;
 
 import android.app.Activity;
 import android.app.IntentService;
 import android.content.Intent;
 import android.support.annotation.Nullable;
 
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -18,10 +20,10 @@ import me.esca.model.Recipe;
 /**
  * Created by Me on 02/06/2017.
  */
-
+//TODO Implement database updating after data is retrieved
 public class RetrieveAllRecipes extends IntentService {
 
-    public static String MAIN_DOMAIN_NAME = "escaws.herokuapp.com";
+    public static String MAIN_DOMAIN_NAME = "http://escaws.herokuapp.com";
     private static String ALL_RECIPES_URL = "/general/recipes";
 
     private int result = Activity.RESULT_CANCELED;
@@ -34,15 +36,21 @@ public class RetrieveAllRecipes extends IntentService {
         super("RetrieveAllRecipes");
     }
 
+    public List<Recipe> getRecipeList() {
+        return recipeList;
+    }
+
     //onHandleIntent is automatically executed asynchronously.
     @Override
     protected void onHandleIntent(@Nullable Intent intent) {
-        //TODO hans't been tested yet (this service is already called in FoodFeedActivity)
+
         RestTemplate restTemplate = new RestTemplate();
-        ResponseEntity<Recipe[]> responseEntity = restTemplate.getForEntity(MAIN_DOMAIN_NAME+ALL_RECIPES_URL, Recipe[].class);
-        Recipe[] recipes = responseEntity.getBody();
-        MediaType contentType = responseEntity.getHeaders().getContentType();
-        HttpStatus statusCode = responseEntity.getStatusCode();
+        ResponseEntity<List<Recipe>> rateResponse =
+                restTemplate.exchange(MAIN_DOMAIN_NAME+ALL_RECIPES_URL,
+                HttpMethod.GET, null, new ParameterizedTypeReference<List<Recipe>>() {
+                });
+
+        recipeList = rateResponse.getBody();
 
         publishResults(Activity.RESULT_OK);
 

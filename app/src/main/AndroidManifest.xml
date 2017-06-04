@@ -1,6 +1,6 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="me.esca">
 
-    package="me.esca">
+    <uses-permission android:name="android.permission.INTERNET"/>
 
     <application
         android:allowBackup="true"
@@ -18,7 +18,7 @@
             </intent-filter>
         </activity>
 
-        <service android:name=".Services.escaWS.recipes.RetrieveAllRecipes"/>
+        <service android:name=".services.escaWS.recipes.RetrieveAllRecipes"/>
 
     </application>
 

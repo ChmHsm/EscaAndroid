@@ -1,12 +1,13 @@
 package me.esca.model;
 
-import java.util.Date;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import java.util.Set;
 
 /**
  * Created by Me on 02/06/2017.
  */
-
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Recipe {
 
     private Long id;
@@ -23,13 +24,13 @@ public class Recipe {
 
     private String instructions;
 
-    private Date dateCreated;
+    private String dateCreated;
 
-    private Date lastUpdated;
+    private String lastUpdated;
 
     private Cook cook;
 
-    public Recipe(String title, int difficultyRating, int prepTime, double prepCost, String ingredients, String instructions, Date dateCreated, Date lastUpdated, Cook cook, Set<Image> recipeImage) {
+    public Recipe(String title, int difficultyRating, int prepTime, double prepCost, String ingredients, String instructions, String dateCreated, String lastUpdated, Cook cook, Set<Image> recipeImage) {
         this.title = title;
         this.difficultyRating = difficultyRating;
         this.prepTime = prepTime;
@@ -65,6 +66,10 @@ public class Recipe {
         this.instructions = instructions;
     }
 
+    public Recipe() {
+        //Jackson converter
+    }
+
     public void setTitle(String title) {
 
         this.title = title;
@@ -90,11 +95,11 @@ public class Recipe {
         this.instructions = instructions;
     }
 
-    public void setDateCreated(Date dateCreated) {
+    public void setDateCreated(String dateCreated) {
         this.dateCreated = dateCreated;
     }
 
-    public void setLastUpdated(Date lastUpdated) {
+    public void setLastUpdated(String lastUpdated) {
         this.lastUpdated = lastUpdated;
     }
 
@@ -135,11 +140,11 @@ public class Recipe {
         return instructions;
     }
 
-    public Date getDateCreated() {
+    public String getDateCreated() {
         return dateCreated;
     }
 
-    public Date getLastUpdated() {
+    public String getLastUpdated() {
         return lastUpdated;
     }
 

@@ -8,14 +8,28 @@ import android.content.IntentFilter;
 import android.os.Bundle;
 import android.os.PersistableBundle;
 import android.support.annotation.Nullable;
+import android.support.v7.widget.DefaultItemAnimator;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.widget.Toast;
 
-import me.esca.Services.escaWS.recipes.RetrieveAllRecipes;
+import java.util.ArrayList;
+
+import me.esca.R;
+import me.esca.adapters.RecipesAdapter;
+import me.esca.decorators.DividerItemDecoration;
+import me.esca.model.Recipe;
+import me.esca.services.escaWS.recipes.RetrieveAllRecipes;
 
 /**
  * Created by Me on 03/06/2017.
  */
 
 public class FoodFeedActivity extends Activity {
+
+    private ArrayList<Recipe> recipes = new ArrayList<>();
+    private RecyclerView recyclerView;
+    private RecipesAdapter recipesAdapter;
 
     private BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
         @Override
@@ -24,9 +38,11 @@ public class FoodFeedActivity extends Activity {
             if (bundle != null) {
                 int resultCode = bundle.getInt(RetrieveAllRecipes.RESULT);
                 if (resultCode == RESULT_OK) {
-
+                    Toast.makeText(FoodFeedActivity.this, "Result was OK "+bundle.getInt("RecipesSize")
+                            , Toast.LENGTH_SHORT).show();
+                    //TODO implement UI updating from database
                 } else {
-
+                    Toast.makeText(FoodFeedActivity.this, "Result was not OK", Toast.LENGTH_SHORT).show();
                 }
         }
     }};
@@ -34,7 +50,20 @@ public class FoodFeedActivity extends Activity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.food_feed_activity);
+        recyclerView = (RecyclerView) findViewById(R.id.food_feed_recycle_view);
+
+        //TODO Perhaps, for good practice, the content view should be set before calling the service
+
         callRetrieveAllRecipesService();
+
+        recipesAdapter = new RecipesAdapter(recipes);
+        RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(FoodFeedActivity.this);
+        recyclerView.setLayoutManager(layoutManager);
+        recyclerView.setItemAnimator(new DefaultItemAnimator());
+        recyclerView.addItemDecoration(new DividerItemDecoration(this, LinearLayoutManager.VERTICAL));
+        recyclerView.setAdapter(recipesAdapter);
+
     }
 
     @Override

@@ -1,12 +1,13 @@
 package me.esca.model;
 
-import java.util.Date;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import java.util.Set;
 
 /**
  * Created by Me on 02/06/2017.
  */
-
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Cook {
 
     private Long Id;
@@ -19,9 +20,13 @@ public class Cook {
 
     private Image image;
 
-    private Date dateCreated;
+    private String dateCreated;
 
-    private Date lastUpdated;
+    private String lastUpdated;
+
+    public Cook() {
+        //Jackson converter
+    }
 
     public Long getId() {
         return Id;
@@ -55,11 +60,11 @@ public class Cook {
         this.image = image;
     }
 
-    public void setDateCreated(Date dateCreated) {
+    public void setDateCreated(String dateCreated) {
         this.dateCreated = dateCreated;
     }
 
-    public void setLastUpdated(Date lastUpdated) {
+    public void setLastUpdated(String lastUpdated) {
         this.lastUpdated = lastUpdated;
     }
 
@@ -67,11 +72,11 @@ public class Cook {
         return image;
     }
 
-    public Date getDateCreated() {
+    public String getDateCreated() {
         return dateCreated;
     }
 
-    public Date getLastUpdated() {
+    public String getLastUpdated() {
         return lastUpdated;
     }
 
@@ -81,7 +86,7 @@ public class Cook {
         this.image = image;
     }
 
-    public Cook(Long id, String username, String password, Set<Recipe> recipes, Image image, Date dateCreated, Date lastUpdated) {
+    public Cook(Long id, String username, String password, Set<Recipe> recipes, Image image, String dateCreated, String lastUpdated) {
         Id = id;
         this.username = username;
         this.password = password;
