@@ -20,6 +20,24 @@
 
         <service android:name=".services.escaWS.recipes.RetrieveAllRecipes"/>
 
+        <provider
+            android:name=".dbRelated.recipe.RecipesContentProvider"
+            android:authorities="me.esca.recipes.contentprovider"
+            android:exported="false">
+        </provider>
+
+        <provider
+            android:name=".dbRelated.cook.CooksContentProvider"
+            android:authorities="me.esca.cooks.contentprovider"
+            android:exported="false">
+        </provider>
+
+        <provider
+            android:name=".dbRelated.image.ImagesContentProvider"
+            android:authorities="me.esca.images.contentprovider"
+            android:exported="false">
+        </provider>
+
     </application>
 
 </manifest>

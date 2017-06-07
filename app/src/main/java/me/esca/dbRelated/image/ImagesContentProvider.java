@@ -166,5 +166,4 @@ public class ImagesContentProvider extends ContentProvider{
         return rowsUpdated;
     }
 
-    //TODO add content provider declaration in manifest
 }

@@ -165,5 +165,4 @@ public class RecipesContentProvider extends ContentProvider{
         getContext().getContentResolver().notifyChange(uri, null);
         return rowsUpdated;
     }
-    //TODO add content provider declaration in manifest
 }
