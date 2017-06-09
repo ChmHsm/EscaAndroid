@@ -64,7 +64,7 @@ public class FoodFeedActivity extends ListActivity implements LoaderManager.Load
 
         callRetrieveAllRecipesService();
 
-        recipesAdapter = new RecipesAdapter(recipes);
+        recipesAdapter = new RecipesAdapter(this, null);
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(FoodFeedActivity.this);
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.setItemAnimator(new DefaultItemAnimator());
