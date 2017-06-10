@@ -11,6 +11,7 @@ import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
+import android.util.Log;
 
 import me.esca.dbRelated.recipe.tableUtils.RecipesDatabaseHelper;
 import me.esca.dbRelated.recipe.tableUtils.RecipesTableDefinition;
@@ -100,6 +101,43 @@ public class RecipesContentProvider extends ContentProvider{
     }
 
     @Override
+    public int bulkInsert(Uri uri, ContentValues[] values) {
+        int uriType = 0;
+        int insertCount = 0;
+        try {
+
+            uriType = sURIMatcher.match(uri);
+            SQLiteDatabase sqlDB = database.getWritableDatabase();
+
+            switch (uriType) {
+                case RECIPES:
+                    try {
+                        sqlDB.beginTransaction();
+                        for (ContentValues value : values) {
+                            long id = sqlDB.insert(RecipesTableDefinition.TABLE_NAME, null, value);
+                            if (id > 0)
+                                insertCount++;
+                        }
+                        sqlDB.setTransactionSuccessful();
+                    } catch (Exception e) {
+                        Log.e("RECIPES: ", "Could not perform batch insertion transaction query on " +
+                                "table recipes. Exception message:" + e.getMessage());
+                    } finally {
+                        sqlDB.endTransaction();
+                    }
+                    break;
+                default:
+                    throw new IllegalArgumentException("Unknown URI: " + uri);
+            }
+            getContext().getContentResolver().notifyChange(uri, null);
+        } catch (Exception e) {
+            Log.e("RECIPES: ", "Could not perform batch insertion transaction query on " +
+                    "table recipes. Exception message:" + e.getMessage());
+        }
+        return insertCount;
+    }
+
+    @Override
     public int delete(@NonNull Uri uri, @Nullable String selection, @Nullable String[] selectionArgs) {
         int uriType = sURIMatcher.match(uri);
         SQLiteDatabase sqlDB = database.getWritableDatabase();
@@ -164,5 +202,24 @@ public class RecipesContentProvider extends ContentProvider{
         }
         getContext().getContentResolver().notifyChange(uri, null);
         return rowsUpdated;
+    }
+
+    public int getCount(@NonNull Uri uri, @Nullable String selection,
+                        @Nullable String[] selectionArgs){
+        //TODO implement getCount by  selectionArgs
+        return 0;
+    }
+
+    public Uri saveOrUpdate(@NonNull Uri uri, @Nullable ContentValues values, @NonNull Long id){
+        //TODO implement saveOrUpdate depending on the id if found or not:
+        //TODO call update id the entity exists in the database, otherwise call insert
+        return null;
+    }
+
+    public Uri bulkSaveOrUpdate(@NonNull Uri uri, @Nullable ContentValues[] values){
+        //TODO implement bulkSaveOrUpdate depending on the id if found or not:
+        //TODO call update id the entity exists in the database, otherwise call insert
+        //TODO Important check: every value in values should contain the _id element
+        return null;
     }
 }

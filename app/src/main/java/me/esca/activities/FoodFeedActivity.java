@@ -1,5 +1,6 @@
 package me.esca.activities;
 
+import android.app.Activity;
 import android.app.ListActivity;
 import android.app.LoaderManager;
 import android.content.BroadcastReceiver;
@@ -30,7 +31,7 @@ import me.esca.services.escaWS.recipes.RetrieveAllRecipes;
  * Created by Me on 03/06/2017.
  */
 
-public class FoodFeedActivity extends ListActivity implements LoaderManager.LoaderCallbacks<Cursor>{
+public class FoodFeedActivity extends Activity implements LoaderManager.LoaderCallbacks<Cursor>{
 
     private ArrayList<Recipe> recipes = new ArrayList<>();
     private RecyclerView recyclerView;

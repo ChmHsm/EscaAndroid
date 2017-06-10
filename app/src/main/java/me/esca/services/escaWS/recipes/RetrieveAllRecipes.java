@@ -2,8 +2,11 @@ package me.esca.services.escaWS.recipes;
 
 import android.app.Activity;
 import android.app.IntentService;
+import android.content.ContentValues;
 import android.content.Intent;
+import android.net.Uri;
 import android.support.annotation.Nullable;
+import android.util.Log;
 
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
@@ -15,6 +18,8 @@ import org.springframework.web.client.RestTemplate;
 import java.util.ArrayList;
 import java.util.List;
 
+import me.esca.dbRelated.recipe.RecipesContentProvider;
+import me.esca.dbRelated.recipe.tableUtils.RecipesTableDefinition;
 import me.esca.model.Recipe;
 
 /**
@@ -31,14 +36,15 @@ public class RetrieveAllRecipes extends IntentService {
     public static final String NOTIFICATION = "me.esca.services.escaWS";
 
     private List<Recipe> recipeList = new ArrayList<>();
-
     public RetrieveAllRecipes(){
         super("RetrieveAllRecipes");
     }
-
     public List<Recipe> getRecipeList() {
         return recipeList;
     }
+
+    private Uri recipesUri;
+    private int insertCount;
 
     //onHandleIntent is automatically executed asynchronously.
     @Override
@@ -52,13 +58,48 @@ public class RetrieveAllRecipes extends IntentService {
 
         recipeList = rateResponse.getBody();
 
-        publishResults(Activity.RESULT_OK);
+        recipesUri = Uri.parse(RecipesContentProvider.CONTENT_TYPE);
 
+//        for (Recipe recipe : recipeList) {
+//            ContentValues values = new ContentValues();
+//            values.put(RecipesTableDefinition.INSTRUCTIONS_COLUMN, recipe.getInstructions());
+//            values.put(RecipesTableDefinition.TITLE_COLUMN, recipe.getTitle());
+//            getContentResolver().insert(RecipesContentProvider.CONTENT_URI, values);
+//        }
+
+
+        //Deletion, otherwise entries will be duplicated.
+        getContentResolver().delete(RecipesContentProvider.CONTENT_URI, null, null);
+        insertCount = bulkInsertRecipes(recipeList);
+        publishResults(Activity.RESULT_OK);
     }
 
     private void publishResults(int result) {
         Intent intent = new Intent(NOTIFICATION);
         intent.putExtra(RESULT, result);
+        intent.putExtra("RecipesSize", insertCount);
         sendBroadcast(intent);
+    }
+
+    public int bulkInsertRecipes(List<Recipe> recipes) {
+        // insert only if data is set correctly
+        if (recipes.size() == 0)
+            return 0;
+
+        try {
+            ContentValues[] valueList = new ContentValues[recipes.size()];
+            int i = 0;
+            for (Recipe recipe : recipes) {
+                ContentValues values = new ContentValues();
+                values.put(RecipesTableDefinition.TITLE_COLUMN, recipe.getTitle());
+                valueList[i++] = values;
+            }
+            insertCount = getContentResolver().bulkInsert(RecipesContentProvider.CONTENT_URI, valueList);
+
+        } catch (Exception e) {
+            Log.e("RECIPES: ", "Could not perform batch insertion transaction query on " +
+                    "table recipes. Exception message:" + e.getMessage());
+        }
+        return insertCount;
     }
 }
