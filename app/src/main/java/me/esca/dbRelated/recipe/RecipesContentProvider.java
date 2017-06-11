@@ -13,6 +13,8 @@ import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.util.Log;
 
+import java.security.InvalidKeyException;
+
 import me.esca.dbRelated.recipe.tableUtils.RecipesDatabaseHelper;
 import me.esca.dbRelated.recipe.tableUtils.RecipesTableDefinition;
 
@@ -170,7 +172,8 @@ public class RecipesContentProvider extends ContentProvider{
     }
 
     @Override
-    public int update(@NonNull Uri uri, @Nullable ContentValues values, @Nullable String selection, @Nullable String[] selectionArgs) {
+    public int update(@NonNull Uri uri, @Nullable ContentValues values, @Nullable String selection,
+                      @Nullable String[] selectionArgs) {
         int uriType = sURIMatcher.match(uri);
         SQLiteDatabase sqlDB = database.getWritableDatabase();
         int rowsUpdated = 0;
@@ -204,17 +207,40 @@ public class RecipesContentProvider extends ContentProvider{
         return rowsUpdated;
     }
 
+    //TODO test method
     public int getCount(@NonNull Uri uri, @Nullable String selection,
                         @Nullable String[] selectionArgs){
-        //TODO implement getCount by  selectionArgs
+        int count;
+        String[] projection = new String[]{RecipesTableDefinition.ID_COLUMN};
+
+        Cursor cursor = query(uri, projection, selection, selectionArgs, null);
+        if(cursor != null){
+            count = cursor.getCount();
+            cursor.close();
+            return count;
+        }
         return 0;
     }
 
-    public Uri saveOrUpdate(@NonNull Uri uri, @Nullable ContentValues values, @NonNull Long id){
-        //TODO implement saveOrUpdate depending on the id if found or not:
-        //TODO call update id the entity exists in the database, otherwise call insert
-        return null;
+    //TODO test method
+    public Uri saveOrUpdate(@NonNull ContentValues values, @NonNull Long id) throws InvalidKeyException {
+        if(id <= 0){
+            throw new InvalidKeyException("The id provided '" + id +"' cannot be equal to zero");
+        }
+        else{
+            Cursor cursor = query(Uri.parse(CONTENT_ITEM_TYPE+"/"+id), new String[]{RecipesTableDefinition.ID_COLUMN},
+                    null, null, null);
+            if(cursor != null && cursor.getCount() > 0){
+                update(Uri.parse(CONTENT_ITEM_TYPE+"/"+id), values, null, null);
+            }
+            else{
+                insert(Uri.parse(CONTENT_ITEM_TYPE+"/"+id), values);
+            }
+
+            return Uri.parse(BASE_PATH + "/" + id);
+        }
     }
+
 
     public Uri bulkSaveOrUpdate(@NonNull Uri uri, @Nullable ContentValues[] values){
         //TODO implement bulkSaveOrUpdate depending on the id if found or not:
