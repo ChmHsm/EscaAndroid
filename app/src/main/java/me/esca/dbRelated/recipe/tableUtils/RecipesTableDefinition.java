@@ -21,10 +21,11 @@ public class RecipesTableDefinition {
     public static final String PREP_COST_COLUMN = "prepCost";
     public static final String COOK_COLUMN = "cook_id";
 
+
     private static final String DATABASE_CREATION_QUERY = "create table "
             + TABLE_NAME
             + "("
-            + ID_COLUMN + " integer primary key autoincrement, "
+            + ID_COLUMN + " integer primary key, "
             + TITLE_COLUMN + " text, "
             + INSTRUCTIONS_COLUMN + " text, "
             + INGREDIENTS_COLUMN + " text, "

@@ -2,8 +2,11 @@ package me.esca.services.escaWS.recipes;
 
 import android.app.Activity;
 import android.app.IntentService;
+import android.content.ContentProvider;
+import android.content.ContentProviderClient;
 import android.content.ContentValues;
 import android.content.Intent;
+import android.database.Cursor;
 import android.net.Uri;
 import android.support.annotation.Nullable;
 import android.util.Log;
@@ -60,46 +63,32 @@ public class RetrieveAllRecipes extends IntentService {
 
         recipesUri = Uri.parse(RecipesContentProvider.CONTENT_TYPE);
 
-//        for (Recipe recipe : recipeList) {
-//            ContentValues values = new ContentValues();
-//            values.put(RecipesTableDefinition.INSTRUCTIONS_COLUMN, recipe.getInstructions());
-//            values.put(RecipesTableDefinition.TITLE_COLUMN, recipe.getTitle());
-//            getContentResolver().insert(RecipesContentProvider.CONTENT_URI, values);
-//        }
-
-
-        //Deletion, otherwise entries will be duplicated.
-        getContentResolver().delete(RecipesContentProvider.CONTENT_URI, null, null);
-        insertCount = bulkInsertRecipes(recipeList);
+        //getContentResolver().delete(RecipesContentProvider.CONTENT_URI, null, null);
+        insertCount = insertRecipes(recipeList);
         publishResults(Activity.RESULT_OK);
     }
 
     private void publishResults(int result) {
         Intent intent = new Intent(NOTIFICATION);
         intent.putExtra(RESULT, result);
-        intent.putExtra("RecipesSize", insertCount);
+        Cursor cursor = getContentResolver().query(RecipesContentProvider.CONTENT_URI,
+                new String[]{"_id"}, null, null, null);
+        intent.putExtra("RecipesSize", cursor == null ? 0 : cursor.getCount());
         sendBroadcast(intent);
     }
 
-    public int bulkInsertRecipes(List<Recipe> recipes) {
-        // insert only if data is set correctly
-        if (recipes.size() == 0)
-            return 0;
+    public int insertRecipes(List<Recipe> recipes) {
 
-        try {
-            ContentValues[] valueList = new ContentValues[recipes.size()];
-            int i = 0;
-            for (Recipe recipe : recipes) {
-                ContentValues values = new ContentValues();
-                values.put(RecipesTableDefinition.TITLE_COLUMN, recipe.getTitle());
-                valueList[i++] = values;
-            }
-            insertCount = getContentResolver().bulkInsert(RecipesContentProvider.CONTENT_URI, valueList);
-
-        } catch (Exception e) {
-            Log.e("RECIPES: ", "Could not perform batch insertion transaction query on " +
-                    "table recipes. Exception message:" + e.getMessage());
+        ContentValues[] contentValues = new ContentValues[recipes.size()];
+        for(int i = 0; i < recipes.size(); i++){
+            ContentValues values = new ContentValues();
+            //TODO insert all attributes in the ContentValues variable
+            values.put(RecipesTableDefinition.ID_COLUMN, recipes.get(i).getId());
+            values.put(RecipesTableDefinition.TITLE_COLUMN, recipes.get(i).getTitle());
+            values.put(RecipesTableDefinition.INGREDIENTS_COLUMN, recipes.get(i).getIngredients());
+            values.put(RecipesTableDefinition.INSTRUCTIONS_COLUMN, recipes.get(i).getInstructions());
+            contentValues[i] = values;
         }
-        return insertCount;
+        return getContentResolver().bulkInsert(RecipesContentProvider.CONTENT_URI, contentValues);
     }
 }

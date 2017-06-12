@@ -22,7 +22,7 @@ public class CooksTableDefinition {
     private static final String DATABASE_CREATION_QUERY = "create table "
             + TABLE_NAME
             + "("
-            + ID_COLUMN + " integer primary key autoincrement, "
+            + ID_COLUMN + " integer primary key, "
             + USERNAME_COLUMN + " text, "
             + PASSWORD_COLUMN + " text, "
             + DATE_CREATED_COLUMN + " text, "

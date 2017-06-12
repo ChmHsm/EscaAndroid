@@ -117,8 +117,7 @@ public class RecipesContentProvider extends ContentProvider{
                         sqlDB.beginTransaction();
                         for (ContentValues value : values) {
                             long id = sqlDB.insert(RecipesTableDefinition.TABLE_NAME, null, value);
-                            if (id > 0)
-                                insertCount++;
+                            if (id > 0) insertCount++;
                         }
                         sqlDB.setTransactionSuccessful();
                     } catch (Exception e) {
@@ -207,7 +206,7 @@ public class RecipesContentProvider extends ContentProvider{
         return rowsUpdated;
     }
 
-    //TODO test method
+    //TODO test method (Couldn't test it for accessibility constraints)
     public int getCount(@NonNull Uri uri, @Nullable String selection,
                         @Nullable String[] selectionArgs){
         int count;
@@ -222,30 +221,70 @@ public class RecipesContentProvider extends ContentProvider{
         return 0;
     }
 
-    //TODO test method
-    public Uri saveOrUpdate(@NonNull ContentValues values, @NonNull Long id) throws InvalidKeyException {
+    //TODO test method (Couldn't test it for accessibility constraints)
+    public Uri saveOrUpdate(@NonNull ContentValues values) throws InvalidKeyException {
+
+        if(!values.containsKey("id")) throw new NullPointerException("id attribute not found while" +
+                " attempting saveOrUpdate on recipes table: the saveOrUpdate method's ContentValues " +
+                "parameter should contain an \"id\" attribute.");
+
+        long id = (Long)values.get("id");
+
         if(id <= 0){
-            throw new InvalidKeyException("The id provided '" + id +"' cannot be equal to zero");
+            //recipes table does not contain negative or 0 as id
+            return insert(Uri.parse(CONTENT_ITEM_TYPE), values);
         }
         else{
-            Cursor cursor = query(Uri.parse(CONTENT_ITEM_TYPE+"/"+id), new String[]{RecipesTableDefinition.ID_COLUMN},
-                    null, null, null);
+            Cursor cursor = query(Uri.parse(CONTENT_ITEM_TYPE+"/"+id), new String[]
+                            {RecipesTableDefinition.ID_COLUMN}, null, null, null);
             if(cursor != null && cursor.getCount() > 0){
                 update(Uri.parse(CONTENT_ITEM_TYPE+"/"+id), values, null, null);
+                cursor.close();
+                return Uri.parse(BASE_PATH + "/" + id);
             }
             else{
-                insert(Uri.parse(CONTENT_ITEM_TYPE+"/"+id), values);
+                if(cursor != null) cursor.close();
+                return insert(Uri.parse(CONTENT_ITEM_TYPE), values);
             }
 
-            return Uri.parse(BASE_PATH + "/" + id);
         }
     }
 
+    //TODO Test method (Couldn't test it for accessibility constraints)
+    public int bulkSaveOrUpdate(@NonNull Uri uri, @Nullable ContentValues[] values){
 
-    public Uri bulkSaveOrUpdate(@NonNull Uri uri, @Nullable ContentValues[] values){
-        //TODO implement bulkSaveOrUpdate depending on the id if found or not:
-        //TODO call update id the entity exists in the database, otherwise call insert
-        //TODO Important check: every value in values should contain the _id element
-        return null;
+        int uriType = 0;
+        int insertCount = 0;
+        try {
+
+            uriType = sURIMatcher.match(uri);
+            SQLiteDatabase sqlDB = database.getWritableDatabase();
+
+            switch (uriType) {
+                case RECIPES:
+                    try {
+                        sqlDB.beginTransaction();
+                        for (ContentValues value : values) {
+                            Uri uri1 = saveOrUpdate(value);
+                            Long id = Long.parseLong(uri1.getLastPathSegment());
+                            if (id > 0) insertCount++;
+                        }
+                        sqlDB.setTransactionSuccessful();
+                    } catch (Exception e) {
+                        Log.e("RECIPES: ", "Could not perform batch insertion transaction query on " +
+                                "table recipes. Exception message:" + e.getMessage());
+                    } finally {
+                        sqlDB.endTransaction();
+                    }
+                    break;
+                default:
+                    throw new IllegalArgumentException("Unknown URI: " + uri);
+            }
+            getContext().getContentResolver().notifyChange(uri, null);
+        } catch (Exception e) {
+            Log.e("RECIPES: ", "Could not perform batch insertion transaction query on " +
+                    "table recipes. Exception message:" + e.getMessage());
+        }
+        return insertCount;
     }
 }
