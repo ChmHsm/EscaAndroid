@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import me.esca.R;
+import me.esca.dbRelated.recipe.tableUtils.RecipesTableDefinition;
 import me.esca.model.Recipe;
 import me.esca.utils.CursorRecyclerViewAdapter;
 
@@ -74,7 +75,7 @@ public class RecipesAdapter extends CursorRecyclerViewAdapter{
 
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View v = LayoutInflater.from(mContext).inflate(android.R.layout.simple_list_item_1, parent, false);
+        View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.recycler_row_recipe, parent, false);
         return new ViewHolder(v);
     }
 
@@ -106,8 +107,8 @@ public class RecipesAdapter extends CursorRecyclerViewAdapter{
         }
 
             public void setData(Cursor c) {
-                recipeTitle.setText("Test Title");
-                recipeDescription.setText("Test Description");
+                recipeTitle.setText(c.getString(c.getColumnIndex("title")));
+                recipeDescription.setText(c.getString(c.getColumnIndex("title")));
             }
     }
 }

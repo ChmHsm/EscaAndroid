@@ -63,7 +63,7 @@ public class RetrieveAllRecipes extends IntentService {
 
         recipesUri = Uri.parse(RecipesContentProvider.CONTENT_TYPE);
 
-        //getContentResolver().delete(RecipesContentProvider.CONTENT_URI, null, null);
+        getContentResolver().delete(RecipesContentProvider.CONTENT_URI, null, null);
         insertCount = insertRecipes(recipeList);
         publishResults(Activity.RESULT_OK);
     }
@@ -74,6 +74,7 @@ public class RetrieveAllRecipes extends IntentService {
         Cursor cursor = getContentResolver().query(RecipesContentProvider.CONTENT_URI,
                 new String[]{"_id"}, null, null, null);
         intent.putExtra("RecipesSize", cursor == null ? 0 : cursor.getCount());
+        if(cursor != null) cursor.close();
         sendBroadcast(intent);
     }
 
