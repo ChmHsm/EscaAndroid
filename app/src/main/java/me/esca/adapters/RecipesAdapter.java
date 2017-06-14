@@ -107,8 +107,8 @@ public class RecipesAdapter extends CursorRecyclerViewAdapter{
         }
 
             public void setData(Cursor c) {
-                recipeTitle.setText(c.getString(c.getColumnIndex("title")));
-                recipeDescription.setText(c.getString(c.getColumnIndex("title")));
+                recipeTitle.setText(c.getString(c.getColumnIndex(RecipesTableDefinition.TITLE_COLUMN)));
+                recipeDescription.setText(c.getString(c.getColumnIndex(RecipesTableDefinition.INSTRUCTIONS_COLUMN)));
             }
     }
 }

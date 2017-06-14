@@ -83,11 +83,14 @@ public class RetrieveAllRecipes extends IntentService {
         ContentValues[] contentValues = new ContentValues[recipes.size()];
         for(int i = 0; i < recipes.size(); i++){
             ContentValues values = new ContentValues();
-            //TODO insert all attributes in the ContentValues variable
             values.put(RecipesTableDefinition.ID_COLUMN, recipes.get(i).getId());
             values.put(RecipesTableDefinition.TITLE_COLUMN, recipes.get(i).getTitle());
+            values.put(RecipesTableDefinition.DIFFICULTY_RATING_COLUMN, recipes.get(i).getDifficultyRating());
+            values.put(RecipesTableDefinition.PREP_TIME_COLUMN, recipes.get(i).getPrepTime());
+            values.put(RecipesTableDefinition.PREP_COST_COLUMN, recipes.get(i).getPrepCost());
             values.put(RecipesTableDefinition.INGREDIENTS_COLUMN, recipes.get(i).getIngredients());
             values.put(RecipesTableDefinition.INSTRUCTIONS_COLUMN, recipes.get(i).getInstructions());
+            values.put(RecipesTableDefinition.DATE_CREATED_COLUMN, recipes.get(i).getDateCreated());
             contentValues[i] = values;
         }
         return getContentResolver().bulkInsert(RecipesContentProvider.CONTENT_URI, contentValues);
