@@ -9,7 +9,7 @@ import android.database.Cursor;
 import android.database.MatrixCursor;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.design.widget.NavigationView;
+import android.support.design.widget.BottomNavigationView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.MenuItem;
@@ -38,10 +38,10 @@ public class FoodFeedActivity extends Activity implements LoaderManager.LoaderCa
         LinearLayoutManager mLayoutManager = new LinearLayoutManager(this);
         RecipesAdapter mAdapter = new RecipesAdapter(this, null);
 
-//        bottomNavigationView bottomNavigationView = (bottomNavigationView)
+//        BottomNavigationView bottomNavigationView = (BottomNavigationView)
 //                findViewById(R.id.bottom_navigation);
-
-
+//
+//
 //        bottomNavigationView.setOnNavigationItemSelectedListener(
 //                new BottomNavigationView.OnNavigationItemSelectedListener() {
 //                    @Override
