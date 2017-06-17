@@ -26,6 +26,7 @@ import me.esca.utils.Connectivity;
  * Created by Me on 03/06/2017.
  */
 
+//TODO This Activity should contain fragments instead so that it complies with the BottomNavigationBar element
 public class FoodFeedActivity extends Activity implements LoaderManager.LoaderCallbacks<Cursor>{
 
     private RecyclerView mRecyclerView;
@@ -38,25 +39,27 @@ public class FoodFeedActivity extends Activity implements LoaderManager.LoaderCa
         LinearLayoutManager mLayoutManager = new LinearLayoutManager(this);
         RecipesAdapter mAdapter = new RecipesAdapter(this, null);
 
-//        BottomNavigationView bottomNavigationView = (BottomNavigationView)
-//                findViewById(R.id.bottom_navigation);
-//
-//
-//        bottomNavigationView.setOnNavigationItemSelectedListener(
-//                new BottomNavigationView.OnNavigationItemSelectedListener() {
-//                    @Override
-//                    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-//                        switch (item.getItemId()) {
-//                            case R.id.action_favorites:
-//
-//                            case R.id.action_schedules:
-//
-//                            case R.id.action_music:
-//
-//                        }
-//                        return true;
-//                    }
-//                });
+        BottomNavigationView bottomNavigationView = (BottomNavigationView)
+                findViewById(R.id.bottom_foodfeed_navigation);
+
+
+        bottomNavigationView.setOnNavigationItemSelectedListener(
+                new BottomNavigationView.OnNavigationItemSelectedListener() {
+                    @Override
+                    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+                        switch (item.getItemId()) {
+                            case R.id.action_home:
+
+                            case R.id.action_favorite:
+
+                            case R.id.action_search:
+
+                            case R.id.action_profile:
+
+                        }
+                        return true;
+                    }
+                });
 
         callRetrieveAllRecipesService();
 
