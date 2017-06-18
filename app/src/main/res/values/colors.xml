@@ -5,6 +5,7 @@
     <color name="colorPrimary">#e5e6ed</color>
     <color name="colorPrimaryDark">#b5b5b8</color>
     <color name="colorAccent">#e950b604</color>
+    <color name="blue">#3498db</color>
     <color name="foreground_material_light">#222621</color>
     <color name="primary_material_light">#dbdddb</color>
     <color name="accent_material_light">#18af18</color>

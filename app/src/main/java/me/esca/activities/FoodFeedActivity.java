@@ -3,13 +3,25 @@ package me.esca.activities;
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
+import android.app.job.JobInfo;
+import android.app.job.JobScheduler;
+import android.content.ComponentName;
+import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.LinkProperties;
+import android.net.Network;
+import android.net.NetworkCapabilities;
+import android.net.NetworkRequest;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.BottomNavigationView;
+import android.support.v7.widget.RecyclerView;
 import android.text.Layout;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.TextView;
 
 import me.esca.R;
 import me.esca.fragments.CookFragment;
@@ -27,6 +39,7 @@ public class FoodFeedActivity extends Activity{
 
     private BottomNavigationView bottomNavigationView;
     private View networkStatusBar;
+    private static int NETWORK_STATE_JOB;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,7 +52,10 @@ public class FoodFeedActivity extends Activity{
         networkStatusBar = findViewById(R.id.network_status_bar);
         if(!Connectivity.isNetworkAvailable(FoodFeedActivity.this))
             networkStatusBar.setVisibility(View.VISIBLE);
-        else networkStatusBar.setVisibility(View.INVISIBLE);
+        else networkStatusBar.setVisibility(View.GONE);
+
+        NetworkRequestBuilderSample networkRequestBuilderSample =
+                new NetworkRequestBuilderSample();
 
 
         bottomNavigationView.setOnNavigationItemSelectedListener(
@@ -71,7 +87,6 @@ public class FoodFeedActivity extends Activity{
                                 ProfileFragment profileFragment = new ProfileFragment();
                                 switchToFragment(profileFragment, null);
                                 break;
-
                         }
                         return true;
                     }
@@ -113,4 +128,75 @@ public class FoodFeedActivity extends Activity{
                 finish();
             }
     }
+
+    public void setNetworkStateBarVisibility(boolean visible){
+
+        TextView connected = (TextView)networkStatusBar.findViewById(R.id.network_state_text_view2);
+        TextView disconnected = (TextView)networkStatusBar.findViewById(R.id.network_state_text_view);
+        networkStatusBar.setVisibility(View.VISIBLE);
+        if(visible) {
+
+            connected.setVisibility(View.VISIBLE);
+            disconnected.setVisibility(View.GONE);
+            Handler handler = new Handler();
+            handler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    networkStatusBar.setVisibility(View.GONE);
+                }
+            }, 1000);
+        }
+        else {
+            connected.setVisibility(View.GONE);
+            disconnected.setVisibility(View.VISIBLE);
+        }
+    }
+
+    private class NetworkRequestBuilderSample {
+        public NetworkRequestBuilderSample() {
+            NetworkRequest.Builder requestBuilder = new NetworkRequest.Builder();
+            requestBuilder.addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET);
+            requestBuilder.addTransportType(NetworkCapabilities.TRANSPORT_CELLULAR);
+            NetworkRequest networkRequest = requestBuilder.build();
+            ConnectivityManager connectivityManager =
+                    (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+            connectivityManager.requestNetwork(networkRequest, new ConnectivityManager.NetworkCallback() {
+                @Override
+                public void onAvailable(Network network) {
+                    super.onAvailable(network);
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            setNetworkStateBarVisibility(true);
+                        }
+                    });
+                }
+
+                @Override
+                public void onLosing(Network network, int maxMsToLive) {
+                    super.onLosing(network, maxMsToLive);
+                }
+                @Override
+                public void onLost(Network network) {
+                    super.onLost(network);
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            setNetworkStateBarVisibility(false);
+                        }
+                    });
+
+                }
+                @Override
+                public void onCapabilitiesChanged(Network network, NetworkCapabilities networkCapabilities) {
+                    super.onCapabilitiesChanged(network, networkCapabilities);
+                }
+                @Override
+                public void onLinkPropertiesChanged(Network network, LinkProperties linkProperties) {
+                    super.onLinkPropertiesChanged(network, linkProperties);
+                }
+            });
+        }
+    }
+
 }
