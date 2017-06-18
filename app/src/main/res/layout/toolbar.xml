@@ -8,10 +8,10 @@
     android:fitsSystemWindows="true"
     android:minHeight="?attr/actionBarSize"
     app:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
-    app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
+    app:popupTheme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
     android:background="?attr/colorAccent"
     app:title="@string/app_name"
     android:elevation="4dp"
-    app:titleTextColor="@color/colorPrimary">
+    app:titleTextColor="@color/white">
 
 </android.support.v7.widget.Toolbar>

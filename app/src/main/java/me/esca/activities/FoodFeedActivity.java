@@ -7,7 +7,9 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.BottomNavigationView;
+import android.text.Layout;
 import android.view.MenuItem;
+import android.view.View;
 
 import me.esca.R;
 import me.esca.fragments.CookFragment;
@@ -15,6 +17,7 @@ import me.esca.fragments.FavoriteFragment;
 import me.esca.fragments.FoodFeedFragment;
 import me.esca.fragments.ProfileFragment;
 import me.esca.fragments.SearchFragment;
+import me.esca.utils.Connectivity;
 
 /**
  * Created by Me on 03/06/2017.
@@ -23,6 +26,7 @@ import me.esca.fragments.SearchFragment;
 public class FoodFeedActivity extends Activity{
 
     private BottomNavigationView bottomNavigationView;
+    private View networkStatusBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,6 +35,11 @@ public class FoodFeedActivity extends Activity{
 
         bottomNavigationView = (BottomNavigationView)
                 findViewById(R.id.bottom_foodfeed_navigation);
+
+        networkStatusBar = findViewById(R.id.network_status_bar);
+        if(!Connectivity.isNetworkAvailable(FoodFeedActivity.this))
+            networkStatusBar.setVisibility(View.VISIBLE);
+        else networkStatusBar.setVisibility(View.INVISIBLE);
 
 
         bottomNavigationView.setOnNavigationItemSelectedListener(
@@ -73,11 +82,8 @@ public class FoodFeedActivity extends Activity{
             if (savedInstanceState != null) {
                 return;
             }
-
             FoodFeedFragment foodFeedFragment = new FoodFeedFragment();
-
             foodFeedFragment.setArguments(getIntent().getExtras());
-
             getFragmentManager().beginTransaction()
                     .add(R.id.fragment_container, foodFeedFragment).commit();
         }
@@ -90,10 +96,8 @@ public class FoodFeedActivity extends Activity{
             fragment.setArguments(bundle);
         }
         FragmentTransaction transaction = getFragmentManager().beginTransaction();
-
         transaction.replace(R.id.fragment_container, fragment);
         transaction.addToBackStack(null);
-
         transaction.commit();
     }
 
@@ -108,6 +112,5 @@ public class FoodFeedActivity extends Activity{
             else{
                 finish();
             }
-
     }
 }

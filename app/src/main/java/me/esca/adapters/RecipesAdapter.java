@@ -99,16 +99,19 @@ public class RecipesAdapter extends CursorRecyclerViewAdapter{
         public class ViewHolder extends RecyclerView.ViewHolder {
         public TextView recipeTitle;
         public TextView recipeDescription;
+        public TextView recipeDate;
 
         public ViewHolder(View view) {
             super(view);
             recipeTitle = (TextView) view.findViewById(R.id.recipteTitleTextView);
-            //recipeDescription = (TextView) view.findViewById(R.id.recipeDescriptionTextView);
+            recipeDescription = (TextView) view.findViewById(R.id.recipe_description_text_view);
+            recipeDate = (TextView) view.findViewById(R.id.recipe_date_text_view);
         }
 
             public void setData(Cursor c) {
                 recipeTitle.setText(c.getString(c.getColumnIndex(RecipesTableDefinition.TITLE_COLUMN)));
-                //recipeDescription.setText(c.getString(c.getColumnIndex(RecipesTableDefinition.INSTRUCTIONS_COLUMN)));
+                recipeDescription.setText(c.getString(c.getColumnIndex(RecipesTableDefinition.INSTRUCTIONS_COLUMN)));
+                recipeDate.setText(c.getString(c.getColumnIndex(RecipesTableDefinition.DATE_CREATED_COLUMN)));
             }
     }
 }
