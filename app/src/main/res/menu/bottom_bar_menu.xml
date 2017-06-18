@@ -14,6 +14,12 @@
         android:title="@string/text_search"
         app:showAsAction="ifRoom" />
     <item
+        android:id="@+id/action_cook"
+        android:enabled="true"
+        android:icon="@drawable/action_cook"
+        android:title="@string/text_cook"
+        app:showAsAction="ifRoom" />
+    <item
         android:id="@+id/action_favorite"
         android:enabled="true"
         android:icon="@drawable/bottom_bar_favorite"
