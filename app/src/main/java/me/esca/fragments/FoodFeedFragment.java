@@ -17,9 +17,8 @@ import android.view.ViewGroup;
 import android.widget.Toast;
 
 import me.esca.R;
-import me.esca.activities.FoodFeedActivity;
 import me.esca.adapters.RecipesAdapter;
-import me.esca.dbRelated.recipe.RecipesContentProvider;
+import me.esca.dbRelated.contentProvider.RecipesContentProvider;
 import me.esca.dbRelated.recipe.tableUtils.RecipesTableDefinition;
 import me.esca.services.escaWS.recipes.RetrieveAllRecipes;
 import me.esca.utils.Connectivity;
@@ -62,7 +61,7 @@ public class FoodFeedFragment extends Fragment implements LoaderManager.LoaderCa
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         switch (id) {
             case 0:
-                return new CursorLoader(getActivity(), RecipesContentProvider.CONTENT_URI, null,
+                return new CursorLoader(getActivity(), RecipesContentProvider.CONTENT_URI_RECIPES, null,
                         null, null, null);
             default:
                 throw new IllegalArgumentException("no id handled!");

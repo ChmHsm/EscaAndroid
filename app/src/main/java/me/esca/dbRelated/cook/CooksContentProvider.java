@@ -18,7 +18,7 @@ import me.esca.dbRelated.cook.tableUtils.CooksTableDefinition;
 /**
  * Created by Me on 05/06/2017.
  */
-
+//TODO Remove this specific contentProvider, will be replaced with ../contentProvider/RecipesContentProvider
 public class CooksContentProvider extends ContentProvider{
 
     // database

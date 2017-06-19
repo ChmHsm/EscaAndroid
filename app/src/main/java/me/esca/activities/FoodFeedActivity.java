@@ -39,7 +39,6 @@ public class FoodFeedActivity extends Activity{
 
     private BottomNavigationView bottomNavigationView;
     private View networkStatusBar;
-    private static int NETWORK_STATE_JOB;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,13 +49,9 @@ public class FoodFeedActivity extends Activity{
                 findViewById(R.id.bottom_foodfeed_navigation);
 
         networkStatusBar = findViewById(R.id.network_status_bar);
-        if(!Connectivity.isNetworkAvailable(FoodFeedActivity.this))
-            networkStatusBar.setVisibility(View.VISIBLE);
-        else networkStatusBar.setVisibility(View.GONE);
+        setNetworkStateBarVisibility(false);
 
-        NetworkRequestBuilderSample networkRequestBuilderSample =
-                new NetworkRequestBuilderSample();
-
+        new NetworkRequestState();
 
         bottomNavigationView.setOnNavigationItemSelectedListener(
                 new BottomNavigationView.OnNavigationItemSelectedListener() {
@@ -152,8 +147,8 @@ public class FoodFeedActivity extends Activity{
         }
     }
 
-    private class NetworkRequestBuilderSample {
-        public NetworkRequestBuilderSample() {
+    private class NetworkRequestState {
+        public NetworkRequestState() {
             NetworkRequest.Builder requestBuilder = new NetworkRequest.Builder();
             requestBuilder.addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET);
             requestBuilder.addTransportType(NetworkCapabilities.TRANSPORT_CELLULAR);

@@ -13,7 +13,7 @@
         <include layout="@layout/toolbar" />
         <include layout="@layout/network_status"
             android:id="@+id/network_status_bar"
-            android:visibility="visible"/>
+            android:visibility="gone"/>
 
         <FrameLayout
             android:id="@+id/fragment_container"

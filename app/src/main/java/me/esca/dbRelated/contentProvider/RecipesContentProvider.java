@@ -1,4 +1,4 @@
-package me.esca.dbRelated.recipe;
+package me.esca.dbRelated.contentProvider;
 
 import android.content.ContentProvider;
 import android.content.ContentResolver;
@@ -30,20 +30,39 @@ public class RecipesContentProvider extends ContentProvider{
     // used for the UriMatcher
     private static final int RECIPES = 10;
     private static final int RECIPE_ID = 20;
+    private static final int COOKS = 11;
+    private static final int COOKS_ID = 21;
+    private static final int IMAGES = 12;
+    private static final int IMAGE_ID = 22;
 
-    private static final String AUTHORITY = "me.esca.recipes.contentprovider";
+    private static final String AUTHORITY_RECIPES = "me.esca.recipes.contentprovider";
+    private static final String AUTHORITY_COOKS = "me.esca.cooks.contentprovider";
+    private static final String AUTHORITY_IMAGES = "me.esca.images.contentprovider";
 
-    private static final String BASE_PATH = "recipes";
-    public static final Uri CONTENT_URI = Uri.parse("content://" + AUTHORITY + "/" + BASE_PATH);
+    private static final String BASE_PATH_RECIPES = "recipes";
+    private static final String BASE_PATH_COOKS = "cooks";
+    private static final String BASE_PATH_IMAGES = "images";
 
-    public static final String CONTENT_TYPE = ContentResolver.CURSOR_DIR_BASE_TYPE + "/recipes";
-    public static final String CONTENT_ITEM_TYPE = ContentResolver.CURSOR_ITEM_BASE_TYPE + "/recipe";
+    public static final Uri CONTENT_URI_RECIPES = Uri.parse("content://" + AUTHORITY_RECIPES + "/" + BASE_PATH_RECIPES);
+    public static final Uri CONTENT_URI_COOKS = Uri.parse("content://" + AUTHORITY_COOKS + "/" + BASE_PATH_COOKS);
+    public static final Uri CONTENT_URI_IMAGES = Uri.parse("content://" + AUTHORITY_IMAGES + "/" + BASE_PATH_IMAGES);
+
+    public static final String CONTENT_TYPE_RECIPES = ContentResolver.CURSOR_DIR_BASE_TYPE + "/recipes";
+    public static final String CONTENT_ITEM_TYPE_RECIPES = ContentResolver.CURSOR_ITEM_BASE_TYPE + "/recipe";
+    public static final String CONTENT_TYPE_COOKS = ContentResolver.CURSOR_DIR_BASE_TYPE + "/cooks";
+    public static final String CONTENT_ITEM_TYPE_COOKS = ContentResolver.CURSOR_ITEM_BASE_TYPE + "/cook";
+    public static final String CONTENT_TYPE_IMAGES = ContentResolver.CURSOR_DIR_BASE_TYPE + "/images";
+    public static final String CONTENT_ITEM_TYPE_IMAGES = ContentResolver.CURSOR_ITEM_BASE_TYPE + "/image";
 
     private static final UriMatcher sURIMatcher = new UriMatcher(UriMatcher.NO_MATCH);
 
     static {
-        sURIMatcher.addURI(AUTHORITY, BASE_PATH, RECIPES);
-        sURIMatcher.addURI(AUTHORITY, BASE_PATH + "/#", RECIPE_ID);
+        sURIMatcher.addURI(AUTHORITY_RECIPES, BASE_PATH_RECIPES, RECIPES);
+        sURIMatcher.addURI(AUTHORITY_RECIPES, BASE_PATH_RECIPES + "/#", RECIPE_ID);
+        sURIMatcher.addURI(AUTHORITY_COOKS, BASE_PATH_COOKS, COOKS);
+        sURIMatcher.addURI(AUTHORITY_COOKS, BASE_PATH_COOKS + "/#", COOKS_ID);
+        sURIMatcher.addURI(AUTHORITY_IMAGES, BASE_PATH_IMAGES, IMAGES);
+        sURIMatcher.addURI(AUTHORITY_IMAGES, BASE_PATH_IMAGES + "/#", IMAGE_ID);
     }
 
     @Override
@@ -99,7 +118,7 @@ public class RecipesContentProvider extends ContentProvider{
                 throw new IllegalArgumentException("Unknown URI: " + uri);
         }
         getContext().getContentResolver().notifyChange(uri, null);
-        return Uri.parse(BASE_PATH + "/" + id);
+        return Uri.parse(BASE_PATH_RECIPES + "/" + id);
     }
 
     @Override
@@ -232,19 +251,19 @@ public class RecipesContentProvider extends ContentProvider{
 
         if(id <= 0){
             //recipes table does not contain negative or 0 as id
-            return insert(Uri.parse(CONTENT_ITEM_TYPE), values);
+            return insert(Uri.parse(CONTENT_ITEM_TYPE_RECIPES), values);
         }
         else{
-            Cursor cursor = query(Uri.parse(CONTENT_ITEM_TYPE+"/"+id), new String[]
+            Cursor cursor = query(Uri.parse(CONTENT_ITEM_TYPE_RECIPES +"/"+id), new String[]
                             {RecipesTableDefinition.ID_COLUMN}, null, null, null);
             if(cursor != null && cursor.getCount() > 0){
-                update(Uri.parse(CONTENT_ITEM_TYPE+"/"+id), values, null, null);
+                update(Uri.parse(CONTENT_ITEM_TYPE_RECIPES +"/"+id), values, null, null);
                 cursor.close();
-                return Uri.parse(BASE_PATH + "/" + id);
+                return Uri.parse(BASE_PATH_RECIPES + "/" + id);
             }
             else{
                 if(cursor != null) cursor.close();
-                return insert(Uri.parse(CONTENT_ITEM_TYPE), values);
+                return insert(Uri.parse(CONTENT_ITEM_TYPE_RECIPES), values);
             }
 
         }

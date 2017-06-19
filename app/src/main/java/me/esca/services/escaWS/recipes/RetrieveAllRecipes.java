@@ -2,26 +2,20 @@ package me.esca.services.escaWS.recipes;
 
 import android.app.Activity;
 import android.app.IntentService;
-import android.content.ContentProvider;
-import android.content.ContentProviderClient;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.database.Cursor;
-import android.net.Uri;
 import android.support.annotation.Nullable;
-import android.util.Log;
 
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import me.esca.dbRelated.recipe.RecipesContentProvider;
+import me.esca.dbRelated.contentProvider.RecipesContentProvider;
 import me.esca.dbRelated.recipe.tableUtils.RecipesTableDefinition;
 import me.esca.model.Recipe;
 
@@ -46,32 +40,28 @@ public class RetrieveAllRecipes extends IntentService {
         return recipeList;
     }
 
-    private Uri recipesUri;
-    private int insertCount;
 
     //onHandleIntent is automatically executed asynchronously.
     @Override
     protected void onHandleIntent(@Nullable Intent intent) {
 
         RestTemplate restTemplate = new RestTemplate();
-        ResponseEntity<List<Recipe>> rateResponse =
+        ResponseEntity<List<Recipe>> response =
                 restTemplate.exchange(MAIN_DOMAIN_NAME+ALL_RECIPES_URL,
                 HttpMethod.GET, null, new ParameterizedTypeReference<List<Recipe>>() {
                 });
 
-        recipeList = rateResponse.getBody();
+        recipeList = response.getBody();
 
-        recipesUri = Uri.parse(RecipesContentProvider.CONTENT_TYPE);
-
-        getContentResolver().delete(RecipesContentProvider.CONTENT_URI, null, null);
-        insertCount = insertRecipes(recipeList);
+        getContentResolver().delete(RecipesContentProvider.CONTENT_URI_RECIPES, null, null);
+        insertRecipes(recipeList);
         publishResults(Activity.RESULT_OK);
     }
 
     private void publishResults(int result) {
         Intent intent = new Intent(NOTIFICATION);
         intent.putExtra(RESULT, result);
-        Cursor cursor = getContentResolver().query(RecipesContentProvider.CONTENT_URI,
+        Cursor cursor = getContentResolver().query(RecipesContentProvider.CONTENT_URI_RECIPES,
                 new String[]{"_id"}, null, null, null);
         intent.putExtra("RecipesSize", cursor == null ? 0 : cursor.getCount());
         if(cursor != null) cursor.close();
@@ -93,6 +83,6 @@ public class RetrieveAllRecipes extends IntentService {
             values.put(RecipesTableDefinition.DATE_CREATED_COLUMN, recipes.get(i).getDateCreated());
             contentValues[i] = values;
         }
-        return getContentResolver().bulkInsert(RecipesContentProvider.CONTENT_URI, contentValues);
+        return getContentResolver().bulkInsert(RecipesContentProvider.CONTENT_URI_RECIPES, contentValues);
     }
 }
