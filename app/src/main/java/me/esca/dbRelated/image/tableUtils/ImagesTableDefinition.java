@@ -22,7 +22,7 @@ public class ImagesTableDefinition {
     public static final String COOK_ID_COLUMN = "cookId";
     public static final String RECIPE_ID_COLUMN = "recipeId";
 
-    private static final String DATABASE_CREATION_QUERY = "create table "
+    private static final String DATABASE_CREATION_QUERY = "CREATE TABLE IF NOT EXISTS "
             + TABLE_NAME
             + "("
             + ID_COLUMN + " integer primary key, "

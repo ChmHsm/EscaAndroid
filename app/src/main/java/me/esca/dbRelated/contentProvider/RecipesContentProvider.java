@@ -15,14 +15,16 @@ import android.util.Log;
 
 import java.security.InvalidKeyException;
 
-import me.esca.dbRelated.recipe.tableUtils.RecipesDatabaseHelper;
+import me.esca.dbRelated.cook.tableUtils.CooksTableDefinition;
+import me.esca.dbRelated.image.tableUtils.ImagesTableDefinition;
+import me.esca.dbRelated.RecipesDatabaseHelper;
 import me.esca.dbRelated.recipe.tableUtils.RecipesTableDefinition;
 
 /**
  * Created by Me on 05/06/2017.
  */
 
-public class RecipesContentProvider extends ContentProvider{
+public class RecipesContentProvider extends ContentProvider {
 
     // database
     private RecipesDatabaseHelper database;
@@ -31,7 +33,7 @@ public class RecipesContentProvider extends ContentProvider{
     private static final int RECIPES = 10;
     private static final int RECIPE_ID = 20;
     private static final int COOKS = 11;
-    private static final int COOKS_ID = 21;
+    private static final int COOK_ID = 21;
     private static final int IMAGES = 12;
     private static final int IMAGE_ID = 22;
 
@@ -60,7 +62,7 @@ public class RecipesContentProvider extends ContentProvider{
         sURIMatcher.addURI(AUTHORITY_RECIPES, BASE_PATH_RECIPES, RECIPES);
         sURIMatcher.addURI(AUTHORITY_RECIPES, BASE_PATH_RECIPES + "/#", RECIPE_ID);
         sURIMatcher.addURI(AUTHORITY_COOKS, BASE_PATH_COOKS, COOKS);
-        sURIMatcher.addURI(AUTHORITY_COOKS, BASE_PATH_COOKS + "/#", COOKS_ID);
+        sURIMatcher.addURI(AUTHORITY_COOKS, BASE_PATH_COOKS + "/#", COOK_ID);
         sURIMatcher.addURI(AUTHORITY_IMAGES, BASE_PATH_IMAGES, IMAGES);
         sURIMatcher.addURI(AUTHORITY_IMAGES, BASE_PATH_IMAGES + "/#", IMAGE_ID);
     }
@@ -78,14 +80,28 @@ public class RecipesContentProvider extends ContentProvider{
 
         SQLiteQueryBuilder queryBuilder = new SQLiteQueryBuilder();
 
-        queryBuilder.setTables(RecipesTableDefinition.TABLE_NAME);
-
         int uriType = sURIMatcher.match(uri);
         switch (uriType) {
             case RECIPES:
+                queryBuilder.setTables(RecipesTableDefinition.TABLE_NAME);
+                break;
+            case COOKS:
+                queryBuilder.setTables(CooksTableDefinition.TABLE_NAME);
+                break;
+            case IMAGES:
+                queryBuilder.setTables(ImagesTableDefinition.TABLE_NAME);
                 break;
             case RECIPE_ID:
-                queryBuilder.appendWhere(RecipesTableDefinition.ID_COLUMN+ "=" + uri.getLastPathSegment());
+                queryBuilder.setTables(RecipesTableDefinition.TABLE_NAME);
+                queryBuilder.appendWhere(RecipesTableDefinition.ID_COLUMN + "=" + uri.getLastPathSegment());
+                break;
+            case COOK_ID:
+                queryBuilder.setTables(CooksTableDefinition.TABLE_NAME);
+                queryBuilder.appendWhere(CooksTableDefinition.ID_COLUMN + "=" + uri.getLastPathSegment());
+                break;
+            case IMAGE_ID:
+                queryBuilder.setTables(ImagesTableDefinition.TABLE_NAME);
+                queryBuilder.appendWhere(ImagesTableDefinition.ID_COLUMN + "=" + uri.getLastPathSegment());
                 break;
             default:
                 throw new IllegalArgumentException("Unknown URI: " + uri);
@@ -93,7 +109,7 @@ public class RecipesContentProvider extends ContentProvider{
 
         SQLiteDatabase db = database.getWritableDatabase();
         Cursor cursor = queryBuilder.query(db, projection, selection, selectionArgs, null, null, sortOrder);
-        cursor.setNotificationUri(getContext().getContentResolver(), uri);
+        if (getContext() != null) cursor.setNotificationUri(getContext().getContentResolver(), uri);
 
         return cursor;
     }
@@ -109,7 +125,7 @@ public class RecipesContentProvider extends ContentProvider{
     public Uri insert(@NonNull Uri uri, @Nullable ContentValues values) {
         int uriType = sURIMatcher.match(uri);
         SQLiteDatabase sqlDB = database.getWritableDatabase();
-        long id = 0;
+        long id;
         switch (uriType) {
             case RECIPES:
                 id = sqlDB.insert(RecipesTableDefinition.TABLE_NAME, null, values);
@@ -117,39 +133,47 @@ public class RecipesContentProvider extends ContentProvider{
             default:
                 throw new IllegalArgumentException("Unknown URI: " + uri);
         }
-        getContext().getContentResolver().notifyChange(uri, null);
+        if (getContext() != null) getContext().getContentResolver().notifyChange(uri, null);
         return Uri.parse(BASE_PATH_RECIPES + "/" + id);
     }
 
     @Override
-    public int bulkInsert(Uri uri, ContentValues[] values) {
-        int uriType = 0;
+    public int bulkInsert(@NonNull Uri uri, @NonNull ContentValues[] values) {
+        int uriType;
         int insertCount = 0;
         try {
 
             uriType = sURIMatcher.match(uri);
             SQLiteDatabase sqlDB = database.getWritableDatabase();
 
-            switch (uriType) {
-                case RECIPES:
-                    try {
-                        sqlDB.beginTransaction();
-                        for (ContentValues value : values) {
-                            long id = sqlDB.insert(RecipesTableDefinition.TABLE_NAME, null, value);
-                            if (id > 0) insertCount++;
-                        }
-                        sqlDB.setTransactionSuccessful();
-                    } catch (Exception e) {
-                        Log.e("RECIPES: ", "Could not perform batch insertion transaction query on " +
-                                "table recipes. Exception message:" + e.getMessage());
-                    } finally {
-                        sqlDB.endTransaction();
+            try {
+                sqlDB.beginTransaction();
+                for (ContentValues value : values) {
+                    Long id;
+                    switch (uriType) {
+                        case RECIPES:
+                            id = sqlDB.insert(RecipesTableDefinition.TABLE_NAME, null, value);
+                            break;
+                        case COOKS:
+                            id = sqlDB.insert(CooksTableDefinition.TABLE_NAME, null, value);
+                            break;
+                        case IMAGES:
+                            id = sqlDB.insert(ImagesTableDefinition.TABLE_NAME, null, value);
+                            break;
+                        default:
+                            throw new IllegalArgumentException("Unknown URI: " + uri);
                     }
-                    break;
-                default:
-                    throw new IllegalArgumentException("Unknown URI: " + uri);
+                    if (id > 0) insertCount++;
+                }
+                sqlDB.setTransactionSuccessful();
+            } catch (Exception e) {
+                Log.e("RECIPES BULK INSERT: ", "Could not perform batch insertion transaction query on " +
+                        "table " + uriType + ". Exception message:" + e.getMessage());
+            } finally {
+                sqlDB.endTransaction();
             }
-            getContext().getContentResolver().notifyChange(uri, null);
+
+            if (getContext() != null) getContext().getContentResolver().notifyChange(uri, null);
         } catch (Exception e) {
             Log.e("RECIPES: ", "Could not perform batch insertion transaction query on " +
                     "table recipes. Exception message:" + e.getMessage());
@@ -161,14 +185,24 @@ public class RecipesContentProvider extends ContentProvider{
     public int delete(@NonNull Uri uri, @Nullable String selection, @Nullable String[] selectionArgs) {
         int uriType = sURIMatcher.match(uri);
         SQLiteDatabase sqlDB = database.getWritableDatabase();
-        int rowsDeleted = 0;
+        int rowsDeleted;
+        String id;
         switch (uriType) {
             case RECIPES:
                 rowsDeleted = sqlDB.delete(RecipesTableDefinition.TABLE_NAME, selection,
                         selectionArgs);
                 break;
+            case COOKS:
+                rowsDeleted = sqlDB.delete(CooksTableDefinition.TABLE_NAME, selection,
+                        selectionArgs);
+                break;
+            case IMAGES:
+                rowsDeleted = sqlDB.delete(ImagesTableDefinition.TABLE_NAME, selection,
+                        selectionArgs);
+                break;
+            //TODO **********Could be optimized************
             case RECIPE_ID:
-                String id = uri.getLastPathSegment();
+                id = uri.getLastPathSegment();
                 if (TextUtils.isEmpty(selection)) {
                     rowsDeleted = sqlDB.delete(
                             RecipesTableDefinition.TABLE_NAME,
@@ -182,10 +216,41 @@ public class RecipesContentProvider extends ContentProvider{
                             selectionArgs);
                 }
                 break;
+            case COOK_ID:
+                id = uri.getLastPathSegment();
+                if (TextUtils.isEmpty(selection)) {
+                    rowsDeleted = sqlDB.delete(
+                            CooksTableDefinition.TABLE_NAME,
+                            CooksTableDefinition.ID_COLUMN + "=" + id,
+                            null);
+                } else {
+                    rowsDeleted = sqlDB.delete(
+                            CooksTableDefinition.TABLE_NAME,
+                            CooksTableDefinition.ID_COLUMN + "=" + id
+                                    + " and " + selection,
+                            selectionArgs);
+                }
+                break;
+            case IMAGE_ID:
+                id = uri.getLastPathSegment();
+                if (TextUtils.isEmpty(selection)) {
+                    rowsDeleted = sqlDB.delete(
+                            ImagesTableDefinition.TABLE_NAME,
+                            ImagesTableDefinition.ID_COLUMN + "=" + id,
+                            null);
+                } else {
+                    rowsDeleted = sqlDB.delete(
+                            ImagesTableDefinition.TABLE_NAME,
+                            ImagesTableDefinition.ID_COLUMN + "=" + id
+                                    + " and " + selection,
+                            selectionArgs);
+                }
+                break;
+            //TODO **********Could be optimized************
             default:
                 throw new IllegalArgumentException("Unknown URI: " + uri);
         }
-        getContext().getContentResolver().notifyChange(uri, null);
+        if (getContext() != null) getContext().getContentResolver().notifyChange(uri, null);
         return rowsDeleted;
     }
 
@@ -194,7 +259,8 @@ public class RecipesContentProvider extends ContentProvider{
                       @Nullable String[] selectionArgs) {
         int uriType = sURIMatcher.match(uri);
         SQLiteDatabase sqlDB = database.getWritableDatabase();
-        int rowsUpdated = 0;
+        int rowsUpdated;
+        String id;
         switch (uriType) {
             case RECIPES:
                 rowsUpdated = sqlDB.update(RecipesTableDefinition.TABLE_NAME,
@@ -202,8 +268,20 @@ public class RecipesContentProvider extends ContentProvider{
                         selection,
                         selectionArgs);
                 break;
+            case COOKS:
+                rowsUpdated = sqlDB.update(CooksTableDefinition.TABLE_NAME,
+                        values,
+                        selection,
+                        selectionArgs);
+                break;
+            case IMAGES:
+                rowsUpdated = sqlDB.update(ImagesTableDefinition.TABLE_NAME,
+                        values,
+                        selection,
+                        selectionArgs);
+                break;
             case RECIPE_ID:
-                String id = uri.getLastPathSegment();
+                id = uri.getLastPathSegment();
                 if (TextUtils.isEmpty(selection)) {
                     rowsUpdated = sqlDB.update(RecipesTableDefinition.TABLE_NAME,
                             values,
@@ -218,21 +296,53 @@ public class RecipesContentProvider extends ContentProvider{
                             selectionArgs);
                 }
                 break;
+            case COOK_ID:
+                id = uri.getLastPathSegment();
+                if (TextUtils.isEmpty(selection)) {
+                    rowsUpdated = sqlDB.update(CooksTableDefinition.TABLE_NAME,
+                            values,
+                            CooksTableDefinition.ID_COLUMN + "=" + id,
+                            null);
+                } else {
+                    rowsUpdated = sqlDB.update(CooksTableDefinition.TABLE_NAME,
+                            values,
+                            CooksTableDefinition.ID_COLUMN + "=" + id
+                                    + " and "
+                                    + selection,
+                            selectionArgs);
+                }
+                break;
+            case IMAGE_ID:
+                id = uri.getLastPathSegment();
+                if (TextUtils.isEmpty(selection)) {
+                    rowsUpdated = sqlDB.update(ImagesTableDefinition.TABLE_NAME,
+                            values,
+                            ImagesTableDefinition.ID_COLUMN + "=" + id,
+                            null);
+                } else {
+                    rowsUpdated = sqlDB.update(ImagesTableDefinition.TABLE_NAME,
+                            values,
+                            ImagesTableDefinition.ID_COLUMN + "=" + id
+                                    + " and "
+                                    + selection,
+                            selectionArgs);
+                }
+                break;
             default:
                 throw new IllegalArgumentException("Unknown URI: " + uri);
         }
-        getContext().getContentResolver().notifyChange(uri, null);
+        if (getContext() != null) getContext().getContentResolver().notifyChange(uri, null);
         return rowsUpdated;
     }
 
     //TODO test method (Couldn't test it for accessibility constraints)
     public int getCount(@NonNull Uri uri, @Nullable String selection,
-                        @Nullable String[] selectionArgs){
+                        @Nullable String[] selectionArgs) {
         int count;
         String[] projection = new String[]{RecipesTableDefinition.ID_COLUMN};
 
         Cursor cursor = query(uri, projection, selection, selectionArgs, null);
-        if(cursor != null){
+        if (cursor != null) {
             count = cursor.getCount();
             cursor.close();
             return count;
@@ -243,26 +353,25 @@ public class RecipesContentProvider extends ContentProvider{
     //TODO test method (Couldn't test it for accessibility constraints)
     public Uri saveOrUpdate(@NonNull ContentValues values) throws InvalidKeyException {
 
-        if(!values.containsKey("id")) throw new NullPointerException("id attribute not found while" +
-                " attempting saveOrUpdate on recipes table: the saveOrUpdate method's ContentValues " +
-                "parameter should contain an \"id\" attribute.");
+        if (!values.containsKey("id"))
+            throw new NullPointerException("id attribute not found while" +
+                    " attempting saveOrUpdate on recipes table: the saveOrUpdate method's ContentValues " +
+                    "parameter should contain an \"id\" attribute.");
 
-        long id = (Long)values.get("id");
+        long id = (Long) values.get("id");
 
-        if(id <= 0){
+        if (id <= 0) {
             //recipes table does not contain negative or 0 as id
             return insert(Uri.parse(CONTENT_ITEM_TYPE_RECIPES), values);
-        }
-        else{
-            Cursor cursor = query(Uri.parse(CONTENT_ITEM_TYPE_RECIPES +"/"+id), new String[]
-                            {RecipesTableDefinition.ID_COLUMN}, null, null, null);
-            if(cursor != null && cursor.getCount() > 0){
-                update(Uri.parse(CONTENT_ITEM_TYPE_RECIPES +"/"+id), values, null, null);
+        } else {
+            Cursor cursor = query(Uri.parse(CONTENT_ITEM_TYPE_RECIPES + "/" + id), new String[]
+                    {RecipesTableDefinition.ID_COLUMN}, null, null, null);
+            if (cursor != null && cursor.getCount() > 0) {
+                update(Uri.parse(CONTENT_ITEM_TYPE_RECIPES + "/" + id), values, null, null);
                 cursor.close();
                 return Uri.parse(BASE_PATH_RECIPES + "/" + id);
-            }
-            else{
-                if(cursor != null) cursor.close();
+            } else {
+                if (cursor != null) cursor.close();
                 return insert(Uri.parse(CONTENT_ITEM_TYPE_RECIPES), values);
             }
 
@@ -270,36 +379,34 @@ public class RecipesContentProvider extends ContentProvider{
     }
 
     //TODO Test method (Couldn't test it for accessibility constraints)
-    public int bulkSaveOrUpdate(@NonNull Uri uri, @Nullable ContentValues[] values){
+    public int bulkSaveOrUpdate(@NonNull Uri uri, @NonNull ContentValues[] values) {
 
-        int uriType = 0;
+        int uriType;
         int insertCount = 0;
         try {
 
             uriType = sURIMatcher.match(uri);
             SQLiteDatabase sqlDB = database.getWritableDatabase();
 
-            switch (uriType) {
-                case RECIPES:
-                    try {
-                        sqlDB.beginTransaction();
-                        for (ContentValues value : values) {
-                            Uri uri1 = saveOrUpdate(value);
-                            Long id = Long.parseLong(uri1.getLastPathSegment());
-                            if (id > 0) insertCount++;
-                        }
-                        sqlDB.setTransactionSuccessful();
-                    } catch (Exception e) {
-                        Log.e("RECIPES: ", "Could not perform batch insertion transaction query on " +
-                                "table recipes. Exception message:" + e.getMessage());
-                    } finally {
-                        sqlDB.endTransaction();
+            if (uriType == RECIPES || uriType == COOKS || uriType == IMAGES) {
+                try {
+                    sqlDB.beginTransaction();
+                    for (ContentValues value : values) {
+                        Uri uri1 = saveOrUpdate(value);
+                        Long id = Long.parseLong(uri1.getLastPathSegment());
+                        if (id > 0) insertCount++;
                     }
-                    break;
-                default:
-                    throw new IllegalArgumentException("Unknown URI: " + uri);
+                    sqlDB.setTransactionSuccessful();
+                } catch (Exception e) {
+                    Log.e("RECIPES: ", "Could not perform batch insertion transaction query on " +
+                            "table recipes. Exception message:" + e.getMessage());
+                } finally {
+                    sqlDB.endTransaction();
+                }
+            } else {
+                throw new IllegalArgumentException("Unknown URI: " + uri);
             }
-            getContext().getContentResolver().notifyChange(uri, null);
+            if (getContext() != null) getContext().getContentResolver().notifyChange(uri, null);
         } catch (Exception e) {
             Log.e("RECIPES: ", "Could not perform batch insertion transaction query on " +
                     "table recipes. Exception message:" + e.getMessage());

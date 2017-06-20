@@ -19,7 +19,7 @@ public class CooksTableDefinition {
     public static final String DATE_CREATED_COLUMN = "dateCreated";
     public static final String LAST_UPDATED_COLUMN = "lastUpdated";
 
-    private static final String DATABASE_CREATION_QUERY = "create table "
+    private static final String DATABASE_CREATION_QUERY = "CREATE TABLE IF NOT EXISTS "
             + TABLE_NAME
             + "("
             + ID_COLUMN + " integer primary key, "
