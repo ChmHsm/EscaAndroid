@@ -32,7 +32,7 @@ public class ImagesTableDefinition {
             + LAST_UPDATED_COLUMN + " text, "
             + IS_MAIN_PICTURE_COLUMN + " numeric, "
             + COOK_ID_COLUMN + " integer references cook on delete Cascade, "
-            + RECIPE_ID_COLUMN + " integer references recipe on delete cascade, "
+            + RECIPE_ID_COLUMN + " integer references recipe on delete cascade "
             + ");";
 
     public static void onCreate(SQLiteDatabase database) {
