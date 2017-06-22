@@ -5,6 +5,8 @@ import android.app.IntentService;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.database.Cursor;
+import android.net.Uri;
+import android.os.Bundle;
 import android.support.annotation.Nullable;
 
 import org.springframework.core.ParameterizedTypeReference;
@@ -16,6 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import me.esca.dbRelated.contentProvider.RecipesContentProvider;
+import me.esca.dbRelated.cook.tableUtils.CooksTableDefinition;
 import me.esca.dbRelated.recipe.tableUtils.RecipesTableDefinition;
 import me.esca.model.Recipe;
 
@@ -54,7 +57,7 @@ public class RetrieveAllRecipes extends IntentService {
         recipeList = response.getBody();
 
         getContentResolver().delete(RecipesContentProvider.CONTENT_URI_RECIPES, null, null);
-        insertRecipes(recipeList);
+        insertEntities(recipeList);
         publishResults(Activity.RESULT_OK);
     }
 
@@ -68,21 +71,43 @@ public class RetrieveAllRecipes extends IntentService {
         sendBroadcast(intent);
     }
 
-    public int insertRecipes(List<Recipe> recipes) {
+    public int insertEntities(List<Recipe> recipes) {
 
-        ContentValues[] contentValues = new ContentValues[recipes.size()];
+        ContentValues[] recipesContentValues = new ContentValues[recipes.size()];
+
         for(int i = 0; i < recipes.size(); i++){
-            ContentValues values = new ContentValues();
-            values.put(RecipesTableDefinition.ID_COLUMN, recipes.get(i).getId());
-            values.put(RecipesTableDefinition.TITLE_COLUMN, recipes.get(i).getTitle());
-            values.put(RecipesTableDefinition.DIFFICULTY_RATING_COLUMN, recipes.get(i).getDifficultyRating());
-            values.put(RecipesTableDefinition.PREP_TIME_COLUMN, recipes.get(i).getPrepTime());
-            values.put(RecipesTableDefinition.PREP_COST_COLUMN, recipes.get(i).getPrepCost());
-            values.put(RecipesTableDefinition.INGREDIENTS_COLUMN, recipes.get(i).getIngredients());
-            values.put(RecipesTableDefinition.INSTRUCTIONS_COLUMN, recipes.get(i).getInstructions());
-            values.put(RecipesTableDefinition.DATE_CREATED_COLUMN, recipes.get(i).getDateCreated());
-            contentValues[i] = values;
+            ContentValues recipeEntityValues = new ContentValues();
+            ContentValues cookEntityValues = new ContentValues();
+            recipeEntityValues.put(RecipesTableDefinition.ID_COLUMN, recipes.get(i).getId());
+            recipeEntityValues.put(RecipesTableDefinition.TITLE_COLUMN, recipes.get(i).getTitle());
+            recipeEntityValues.put(RecipesTableDefinition.DIFFICULTY_RATING_COLUMN, recipes.get(i).getDifficultyRating());
+            recipeEntityValues.put(RecipesTableDefinition.PREP_TIME_COLUMN, recipes.get(i).getPrepTime());
+            recipeEntityValues.put(RecipesTableDefinition.PREP_COST_COLUMN, recipes.get(i).getPrepCost());
+            recipeEntityValues.put(RecipesTableDefinition.INGREDIENTS_COLUMN, recipes.get(i).getIngredients());
+            recipeEntityValues.put(RecipesTableDefinition.INSTRUCTIONS_COLUMN, recipes.get(i).getInstructions());
+            recipeEntityValues.put(RecipesTableDefinition.DATE_CREATED_COLUMN, recipes.get(i).getDateCreated());
+            recipeEntityValues.put(RecipesTableDefinition.COOK_COLUMN, recipes.get(i).getCook().getId());
+            recipesContentValues[i] = recipeEntityValues;
+            cookEntityValues.put(CooksTableDefinition.ID_COLUMN, recipes.get(i).getCook().getId());
+            cookEntityValues.put(CooksTableDefinition.USERNAME_COLUMN, recipes.get(i).getCook().getUsername());
+            cookEntityValues.put(CooksTableDefinition.DATE_CREATED_COLUMN, recipes.get(i).getCook().getDateCreated());
+            Cursor cursor = getContentResolver().query(
+                    Uri.parse(RecipesContentProvider.CONTENT_URI_COOKS +"/"+recipes.get(i).getCook().getId()),
+                    new String[]{CooksTableDefinition.ID_COLUMN}, null, null, null);
+            if(cursor == null || cursor.getCount() == 0) {
+                getContentResolver().insert(
+                        RecipesContentProvider.CONTENT_URI_COOKS,
+                        cookEntityValues);
+            }
+            else{
+                getContentResolver().update(
+                        Uri.parse(RecipesContentProvider.CONTENT_URI_COOKS +"/"+recipes.get(i).getCook().getId()),
+                        cookEntityValues, null, null);
+            }
+
+
+
         }
-        return getContentResolver().bulkInsert(RecipesContentProvider.CONTENT_URI_RECIPES, contentValues);
+        return getContentResolver().bulkInsert(RecipesContentProvider.CONTENT_URI_RECIPES, recipesContentValues);
     }
 }

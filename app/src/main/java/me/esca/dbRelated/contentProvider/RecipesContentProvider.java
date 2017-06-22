@@ -38,16 +38,16 @@ public class RecipesContentProvider extends ContentProvider {
     private static final int IMAGE_ID = 22;
 
     private static final String AUTHORITY_RECIPES = "me.esca.recipes.contentprovider";
-    private static final String AUTHORITY_COOKS = "me.esca.cooks.contentprovider";
-    private static final String AUTHORITY_IMAGES = "me.esca.images.contentprovider";
+//    private static final String AUTHORITY_COOKS = "me.esca.cooks.contentprovider";
+//    private static final String AUTHORITY_IMAGES = "me.esca.images.contentprovider";
 
     private static final String BASE_PATH_RECIPES = "recipes";
     private static final String BASE_PATH_COOKS = "cooks";
     private static final String BASE_PATH_IMAGES = "images";
 
     public static final Uri CONTENT_URI_RECIPES = Uri.parse("content://" + AUTHORITY_RECIPES + "/" + BASE_PATH_RECIPES);
-    public static final Uri CONTENT_URI_COOKS = Uri.parse("content://" + AUTHORITY_COOKS + "/" + BASE_PATH_COOKS);
-    public static final Uri CONTENT_URI_IMAGES = Uri.parse("content://" + AUTHORITY_IMAGES + "/" + BASE_PATH_IMAGES);
+    public static final Uri CONTENT_URI_COOKS = Uri.parse("content://" + AUTHORITY_RECIPES + "/" + BASE_PATH_COOKS);
+    public static final Uri CONTENT_URI_IMAGES = Uri.parse("content://" + AUTHORITY_RECIPES + "/" + BASE_PATH_IMAGES);
 
     public static final String CONTENT_TYPE_RECIPES = ContentResolver.CURSOR_DIR_BASE_TYPE + "/recipes";
     public static final String CONTENT_ITEM_TYPE_RECIPES = ContentResolver.CURSOR_ITEM_BASE_TYPE + "/recipe";
@@ -61,10 +61,10 @@ public class RecipesContentProvider extends ContentProvider {
     static {
         sURIMatcher.addURI(AUTHORITY_RECIPES, BASE_PATH_RECIPES, RECIPES);
         sURIMatcher.addURI(AUTHORITY_RECIPES, BASE_PATH_RECIPES + "/#", RECIPE_ID);
-        sURIMatcher.addURI(AUTHORITY_COOKS, BASE_PATH_COOKS, COOKS);
-        sURIMatcher.addURI(AUTHORITY_COOKS, BASE_PATH_COOKS + "/#", COOK_ID);
-        sURIMatcher.addURI(AUTHORITY_IMAGES, BASE_PATH_IMAGES, IMAGES);
-        sURIMatcher.addURI(AUTHORITY_IMAGES, BASE_PATH_IMAGES + "/#", IMAGE_ID);
+        sURIMatcher.addURI(AUTHORITY_RECIPES, BASE_PATH_COOKS, COOKS);
+        sURIMatcher.addURI(AUTHORITY_RECIPES, BASE_PATH_COOKS + "/#", COOK_ID);
+        sURIMatcher.addURI(AUTHORITY_RECIPES, BASE_PATH_IMAGES, IMAGES);
+        sURIMatcher.addURI(AUTHORITY_RECIPES, BASE_PATH_IMAGES + "/#", IMAGE_ID);
     }
 
     @Override
@@ -129,6 +129,12 @@ public class RecipesContentProvider extends ContentProvider {
         switch (uriType) {
             case RECIPES:
                 id = sqlDB.insert(RecipesTableDefinition.TABLE_NAME, null, values);
+                break;
+            case COOKS:
+                id = sqlDB.insert(CooksTableDefinition.TABLE_NAME, null, values);
+                break;
+            case IMAGES:
+                id = sqlDB.insert(ImagesTableDefinition.TABLE_NAME, null, values);
                 break;
             default:
                 throw new IllegalArgumentException("Unknown URI: " + uri);

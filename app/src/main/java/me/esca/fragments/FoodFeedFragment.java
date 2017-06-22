@@ -81,7 +81,8 @@ public class FoodFeedFragment extends Fragment implements LoaderManager.LoaderCa
                                 RecipesTableDefinition.PREP_COST_COLUMN,
                                 RecipesTableDefinition.INGREDIENTS_COLUMN,
                                 RecipesTableDefinition.INSTRUCTIONS_COLUMN,
-                                RecipesTableDefinition.DATE_CREATED_COLUMN});
+                                RecipesTableDefinition.DATE_CREATED_COLUMN,
+                                RecipesTableDefinition.COOK_COLUMN});
 
                 fillMx(data, mx);
 
@@ -107,7 +108,8 @@ public class FoodFeedFragment extends Fragment implements LoaderManager.LoaderCa
                     data.getString(data.getColumnIndex(RecipesTableDefinition.PREP_COST_COLUMN)),
                     data.getString(data.getColumnIndex(RecipesTableDefinition.INGREDIENTS_COLUMN)),
                     data.getString(data.getColumnIndex(RecipesTableDefinition.INSTRUCTIONS_COLUMN)),
-                    data.getString(data.getColumnIndex(RecipesTableDefinition.DATE_CREATED_COLUMN))
+                    data.getString(data.getColumnIndex(RecipesTableDefinition.DATE_CREATED_COLUMN)),
+                    data.getString(data.getColumnIndex(RecipesTableDefinition.COOK_COLUMN)),
             });
         }
     }

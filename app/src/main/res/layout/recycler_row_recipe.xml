@@ -30,7 +30,7 @@
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:gravity="left|center"
-                android:text="Cook's name"
+                android:text="@string/cook_default_name"
                 android:textSize="14dp"
                 android:textColor="@android:color/black"
                 android:textStyle="bold" />

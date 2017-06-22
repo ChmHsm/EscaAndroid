@@ -10,7 +10,7 @@ import java.util.Set;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Cook {
 
-    private Long Id;
+    private Long id;
 
     private String username;
 
@@ -29,7 +29,7 @@ public class Cook {
     }
 
     public Long getId() {
-        return Id;
+        return id;
     }
 
     public String getUsername() {
@@ -87,7 +87,7 @@ public class Cook {
     }
 
     public Cook(Long id, String username, String password, Set<Recipe> recipes, Image image, String dateCreated, String lastUpdated) {
-        Id = id;
+        this.id = id;
         this.username = username;
         this.password = password;
         this.recipes = recipes;

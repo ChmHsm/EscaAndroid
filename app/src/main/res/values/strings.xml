@@ -12,4 +12,6 @@
     <string name="network_status_connected">Connected</string>
     <string name="network_status_connecting">Connecting</string>
     <string name="network_status_not_connected">Not connected</string>
+    <string name="cook_default_name">Gordon</string>
 </resources>
+
