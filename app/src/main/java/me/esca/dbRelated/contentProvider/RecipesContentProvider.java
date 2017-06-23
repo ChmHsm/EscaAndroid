@@ -38,8 +38,6 @@ public class RecipesContentProvider extends ContentProvider {
     private static final int IMAGE_ID = 22;
 
     private static final String AUTHORITY_RECIPES = "me.esca.recipes.contentprovider";
-//    private static final String AUTHORITY_COOKS = "me.esca.cooks.contentprovider";
-//    private static final String AUTHORITY_IMAGES = "me.esca.images.contentprovider";
 
     private static final String BASE_PATH_RECIPES = "recipes";
     private static final String BASE_PATH_COOKS = "cooks";
@@ -252,7 +250,7 @@ public class RecipesContentProvider extends ContentProvider {
                             selectionArgs);
                 }
                 break;
-            //TODO **********Could be optimized************
+            //TODO **********End of Could be optimized************
             default:
                 throw new IllegalArgumentException("Unknown URI: " + uri);
         }

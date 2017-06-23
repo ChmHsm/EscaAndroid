@@ -23,49 +23,6 @@ import me.esca.utils.CursorRecyclerViewAdapter;
 /**
  * Created by Me on 04/06/2017.
  */
-
-//public class RecipesAdapter extends RecyclerView.Adapter<RecipesAdapter.ViewHolder> {
-//
-//    private List<Recipe> recipesArrayList = new ArrayList<>();
-//
-//    public RecipesAdapter(ArrayList<Recipe> recipes){
-//        this.recipesArrayList = recipes;
-//    }
-//
-//    @Override
-//    public RecipesAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-//        View itemView = LayoutInflater.from(parent.getContext())
-//                .inflate(R.layout.recycler_row_recipe, parent, false);
-//        return new ViewHolder(itemView);
-//    }
-//
-//    @Override
-//    public void onBindViewHolder(RecipesAdapter.ViewHolder holder, int position) {
-//        Recipe recipe = recipesArrayList.get(position);
-//        holder.recipeTitle.setText(recipe.getTitle());
-//        holder.recipedescription.setText(recipe.getInstructions());
-//
-//    }
-//
-//    @Override
-//    public int getItemCount() {
-////         this.recipesArrayList == null ? return 0 : return this.recipesArrayList.size();
-//        return this.recipesArrayList == null ? 0 : this.recipesArrayList.size();
-//
-//    }
-//
-//    public class ViewHolder extends RecyclerView.ViewHolder {
-//        public TextView recipeTitle;
-//        public TextView recipedescription;
-//
-//        public ViewHolder(View view) {
-//            super(view);
-//            recipeTitle = (TextView) view.findViewById(R.id.recipteTitleTextView);
-//            recipedescription = (TextView) view.findViewById(R.id.recipeDescriptionTextView);
-//        }
-//    }
-//}
-
 public class RecipesAdapter extends CursorRecyclerViewAdapter {
 
     public RecipesAdapter(Context context, Cursor cursor) {
@@ -127,6 +84,7 @@ public class RecipesAdapter extends CursorRecyclerViewAdapter {
                 cursor.moveToFirst();
                 cookNameTextView.setText(cursor.getString(
                         cursor.getColumnIndex(CooksTableDefinition.USERNAME_COLUMN)));
+                cursor.close();
             }
         }
     }

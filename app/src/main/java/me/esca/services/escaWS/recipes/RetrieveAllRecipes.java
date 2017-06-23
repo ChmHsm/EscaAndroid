@@ -16,6 +16,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Exchanger;
 
 import me.esca.dbRelated.contentProvider.RecipesContentProvider;
 import me.esca.dbRelated.cook.tableUtils.CooksTableDefinition;
@@ -43,22 +44,25 @@ public class RetrieveAllRecipes extends IntentService {
         return recipeList;
     }
 
-
     //onHandleIntent is automatically executed asynchronously.
     @Override
     protected void onHandleIntent(@Nullable Intent intent) {
 
         RestTemplate restTemplate = new RestTemplate();
-        ResponseEntity<List<Recipe>> response =
-                restTemplate.exchange(MAIN_DOMAIN_NAME+ALL_RECIPES_URL,
-                HttpMethod.GET, null, new ParameterizedTypeReference<List<Recipe>>() {
-                });
+        try{
+            ResponseEntity<List<Recipe>> response =
+                    restTemplate.exchange(MAIN_DOMAIN_NAME+ALL_RECIPES_URL,
+                            HttpMethod.GET, null, new ParameterizedTypeReference<List<Recipe>>() {
+                            });
+            recipeList = response.getBody();
 
-        recipeList = response.getBody();
-
-        getContentResolver().delete(RecipesContentProvider.CONTENT_URI_RECIPES, null, null);
-        insertEntities(recipeList);
-        publishResults(Activity.RESULT_OK);
+            getContentResolver().delete(RecipesContentProvider.CONTENT_URI_RECIPES, null, null);
+            insertEntities(recipeList);
+            publishResults(Activity.RESULT_OK);
+        }
+        catch (Exception e){
+            publishResults(Activity.RESULT_CANCELED);
+        }
     }
 
     private void publishResults(int result) {
@@ -94,6 +98,7 @@ public class RetrieveAllRecipes extends IntentService {
             Cursor cursor = getContentResolver().query(
                     Uri.parse(RecipesContentProvider.CONTENT_URI_COOKS +"/"+recipes.get(i).getCook().getId()),
                     new String[]{CooksTableDefinition.ID_COLUMN}, null, null, null);
+
             if(cursor == null || cursor.getCount() == 0) {
                 getContentResolver().insert(
                         RecipesContentProvider.CONTENT_URI_COOKS,
@@ -104,9 +109,7 @@ public class RetrieveAllRecipes extends IntentService {
                         Uri.parse(RecipesContentProvider.CONTENT_URI_COOKS +"/"+recipes.get(i).getCook().getId()),
                         cookEntityValues, null, null);
             }
-
-
-
+            if(cursor != null) cursor.close();
         }
         return getContentResolver().bulkInsert(RecipesContentProvider.CONTENT_URI_RECIPES, recipesContentValues);
     }
