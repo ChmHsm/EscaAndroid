@@ -20,6 +20,10 @@
             </intent-filter>
         </activity>
 
+        <activity android:name=".activities.RecipeDetailsActivity">
+
+        </activity>
+
         <service android:name=".services.escaWS.recipes.RetrieveAllRecipes"/>
 
         <provider

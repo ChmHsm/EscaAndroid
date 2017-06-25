@@ -130,7 +130,6 @@ public class FoodFeedActivity extends Activity{
         TextView disconnected = (TextView)networkStatusBar.findViewById(R.id.network_state_text_view);
         networkStatusBar.setVisibility(View.VISIBLE);
         if(visible) {
-
             connected.setVisibility(View.VISIBLE);
             disconnected.setVisibility(View.GONE);
             Handler handler = new Handler();
@@ -152,6 +151,7 @@ public class FoodFeedActivity extends Activity{
             NetworkRequest.Builder requestBuilder = new NetworkRequest.Builder();
             requestBuilder.addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET);
             requestBuilder.addTransportType(NetworkCapabilities.TRANSPORT_CELLULAR);
+            requestBuilder.addTransportType(NetworkCapabilities.TRANSPORT_WIFI);
             NetworkRequest networkRequest = requestBuilder.build();
             ConnectivityManager connectivityManager =
                     (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);

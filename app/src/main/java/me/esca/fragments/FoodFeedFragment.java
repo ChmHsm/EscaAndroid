@@ -46,6 +46,8 @@ public class FoodFeedFragment extends Fragment implements LoaderManager.LoaderCa
         mRecyclerView.setAdapter(mAdapter);
         getLoaderManager().initLoader(0, null, this);
 
+
+
         return view;
     }
 

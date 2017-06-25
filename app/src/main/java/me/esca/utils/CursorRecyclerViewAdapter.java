@@ -6,6 +6,9 @@ import android.database.DataSetObserver;
 import android.support.v7.widget.RecyclerView;
 import android.view.ViewGroup;
 
+import me.esca.dbRelated.recipe.tableUtils.RecipesTableDefinition;
+import me.esca.model.Recipe;
+
 /**
  * Created by Me on 09/06/2017.
  */
@@ -26,7 +29,7 @@ public abstract class CursorRecyclerViewAdapter<VH extends RecyclerView.ViewHold
         mContext = context;
         mCursor = cursor;
         mDataValid = cursor != null;
-        mRowIdColumn = mDataValid ? mCursor.getColumnIndex("_id") : -1;
+        mRowIdColumn = mDataValid ? mCursor.getColumnIndex(RecipesTableDefinition.ID_COLUMN) : -1;
         mDataSetObserver = new NotifyingDataSetObserver(this);
         if (mCursor != null) {
             mCursor.registerDataSetObserver(mDataSetObserver);
@@ -107,7 +110,7 @@ public abstract class CursorRecyclerViewAdapter<VH extends RecyclerView.ViewHold
             if (mDataSetObserver != null) {
                 mCursor.registerDataSetObserver(mDataSetObserver);
             }
-            mRowIdColumn = newCursor.getColumnIndexOrThrow("_id");
+            mRowIdColumn = newCursor.getColumnIndexOrThrow(RecipesTableDefinition.ID_COLUMN);
             mDataValid = true;
             notifyDataSetChanged();
         } else {

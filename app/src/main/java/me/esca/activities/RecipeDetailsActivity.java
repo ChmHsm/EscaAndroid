@@ -1,0 +1,94 @@
+package me.esca.activities;
+
+import android.app.Activity;
+import android.database.Cursor;
+import android.databinding.DataBindingUtil;
+import android.net.Uri;
+import android.os.Bundle;
+import android.support.annotation.Nullable;
+import android.widget.Toast;
+
+import me.esca.R;
+import me.esca.databinding.RecipeDetailsActivityBinding;
+import me.esca.dbRelated.contentProvider.RecipesContentProvider;
+import me.esca.dbRelated.cook.tableUtils.CooksTableDefinition;
+import me.esca.dbRelated.recipe.tableUtils.RecipesTableDefinition;
+import me.esca.model.Cook;
+import me.esca.model.Recipe;
+
+/**
+ * Created by Me on 24/06/2017.
+ */
+
+public class RecipeDetailsActivity extends Activity{
+    private Long recipeId;
+    private Long cookId;
+    private Recipe recipe;
+    private Cook cook;
+
+    @Override
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+
+        recipeId = getIntent().getLongExtra("recipeId", 0);
+        if(recipeId > 0){
+            //TODO retrieve the cook
+            RecipeDetailsActivityBinding binding = DataBindingUtil
+                    .setContentView(this, R.layout.recipe_details_activity);
+
+            //Retrieving the recipe
+            Cursor recipeCursor = getContentResolver()
+                    .query(Uri.parse(RecipesContentProvider.CONTENT_URI_RECIPES+"/"+ recipeId),
+                            null, null, null, null);
+
+
+            if(recipeCursor != null && recipeCursor.getCount() > 0){
+                //Retrieving the cook
+                recipeCursor.moveToFirst();
+                cookId = recipeCursor.getLong(recipeCursor.getColumnIndex(RecipesTableDefinition.COOK_COLUMN));
+                if(cookId > 0){
+                    Cursor cookCursor = getContentResolver()
+                            .query(Uri.parse(RecipesContentProvider.CONTENT_URI_COOKS+"/"+ cookId),
+                                    null, null, null, null);
+
+                    if(cookCursor != null && cookCursor.getCount() > 0){
+                        cookCursor.moveToFirst();
+                        cook = new Cook(cookId,
+                                cookCursor.getString(cookCursor.getColumnIndex(CooksTableDefinition.USERNAME_COLUMN)),
+                                null, null, null, null, null);
+
+                        cookCursor.close();
+
+                        recipe = new Recipe(recipeCursor.getString(recipeCursor.getColumnIndex(RecipesTableDefinition.TITLE_COLUMN)),
+                                recipeCursor.getInt(recipeCursor.getColumnIndex(RecipesTableDefinition.DIFFICULTY_RATING_COLUMN)),
+                                recipeCursor.getInt(recipeCursor.getColumnIndex(RecipesTableDefinition.PREP_TIME_COLUMN)),
+                                recipeCursor.getDouble(recipeCursor.getColumnIndex(RecipesTableDefinition.PREP_COST_COLUMN)),
+                                recipeCursor.getString(recipeCursor.getColumnIndex(RecipesTableDefinition.INGREDIENTS_COLUMN)),
+                                recipeCursor.getString(recipeCursor.getColumnIndex(RecipesTableDefinition.INSTRUCTIONS_COLUMN)),
+                                recipeCursor.getString(recipeCursor.getColumnIndex(RecipesTableDefinition.DATE_CREATED_COLUMN)),
+                                recipeCursor.getString(recipeCursor.getColumnIndex(RecipesTableDefinition.LAST_UPDATED_COLUMN)),
+                                cook, null);
+                        binding.setRecipe(recipe);
+                        recipeCursor.close();
+                    }
+                    else{
+                        Toast.makeText(RecipeDetailsActivity.this,
+                                "An error occurred while retrieving the requested recipe",
+                                Toast.LENGTH_LONG).show();
+                    }
+                }
+            }
+            else{
+                Toast.makeText(RecipeDetailsActivity.this,
+                        "An error occurred while retrieving the requested recipe",
+                        Toast.LENGTH_LONG).show();
+            }
+        }
+        else{
+            Toast.makeText(RecipeDetailsActivity.this,
+                    "An error occurred while retrieving the requested recipe",
+                    Toast.LENGTH_LONG).show();
+        }
+    }
+}

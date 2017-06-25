@@ -1,6 +1,7 @@
 package me.esca.adapters;
 
 import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.support.v7.widget.RecyclerView;
@@ -13,6 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import me.esca.R;
+import me.esca.activities.RecipeDetailsActivity;
 import me.esca.dbRelated.contentProvider.RecipesContentProvider;
 import me.esca.dbRelated.cook.tableUtils.CooksTableDefinition;
 import me.esca.dbRelated.recipe.tableUtils.RecipesTableDefinition;
@@ -41,10 +43,25 @@ public class RecipesAdapter extends CursorRecyclerViewAdapter {
     }
 
     @Override
-    public void onBindViewHolder(RecyclerView.ViewHolder viewHolder, Cursor cursor) {
-        ViewHolder holder = (ViewHolder) viewHolder;
+    public void onBindViewHolder(final RecyclerView.ViewHolder viewHolder, final Cursor cursor) {
+        final ViewHolder holder = (ViewHolder) viewHolder;
         cursor.moveToPosition(cursor.getPosition());
         holder.setData(cursor);
+        holder.itemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Long recipeId;
+                recipeId = ((ViewHolder) viewHolder).id;
+                if(recipeId <= 0){
+                    throw new IllegalArgumentException();
+                }
+                else{
+                    Intent intent = new Intent(mContext, RecipeDetailsActivity.class);
+                    intent.putExtra("recipeId",recipeId);
+                    mContext.startActivity(intent);
+                }
+            }
+        });
     }
 
     @Override
@@ -62,6 +79,7 @@ public class RecipesAdapter extends CursorRecyclerViewAdapter {
         public TextView recipeDescription;
         public TextView recipeDate;
         public TextView cookNameTextView;
+        public Long id;
 
         public ViewHolder(View view) {
             super(view);
@@ -75,6 +93,7 @@ public class RecipesAdapter extends CursorRecyclerViewAdapter {
             recipeTitle.setText(c.getString(c.getColumnIndex(RecipesTableDefinition.TITLE_COLUMN)));
             recipeDescription.setText(c.getString(c.getColumnIndex(RecipesTableDefinition.INSTRUCTIONS_COLUMN)));
             recipeDate.setText(c.getString(c.getColumnIndex(RecipesTableDefinition.DATE_CREATED_COLUMN)));
+            id = c.getLong(c.getColumnIndex(RecipesTableDefinition.ID_COLUMN));
             Cursor cursor = mContext.getContentResolver().query(
                     Uri.parse(RecipesContentProvider.CONTENT_URI_COOKS+"/"
                             +c.getString(c.getColumnIndex(RecipesTableDefinition.COOK_COLUMN))),
