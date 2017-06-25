@@ -10,7 +10,8 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
-        <include layout="@layout/toolbar" />
+        <include layout="@layout/toolbar"
+            android:id="@+id/toolbar"/>
         <include layout="@layout/network_status"
             android:id="@+id/network_status_bar"
             android:visibility="gone"/>

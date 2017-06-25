@@ -3,10 +3,15 @@ package me.esca.activities;
 import android.app.Activity;
 import android.database.Cursor;
 import android.databinding.DataBindingUtil;
+import android.graphics.PorterDuff;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.Toolbar;
+
 
 import me.esca.R;
 import me.esca.databinding.RecipeDetailsActivityBinding;
@@ -30,13 +35,26 @@ public class RecipeDetailsActivity extends Activity{
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-
         recipeId = getIntent().getLongExtra("recipeId", 0);
         if(recipeId > 0){
-            //TODO retrieve the cook
             RecipeDetailsActivityBinding binding = DataBindingUtil
                     .setContentView(this, R.layout.recipe_details_activity);
 
+            Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+            setActionBar(toolbar);
+            final Drawable upArrow = getApplicationContext()
+                    .getDrawable(R.drawable.abc_ic_ab_back_material);
+
+            if(getActionBar() != null){
+                if(upArrow != null) {
+                    upArrow.setColorFilter(getApplicationContext()
+                            .getColor(R.color.white), PorterDuff.Mode.SRC_ATOP);
+                    getActionBar().setHomeAsUpIndicator(upArrow);
+                }
+                getActionBar().setDisplayHomeAsUpEnabled(true);
+                getActionBar().setDisplayShowHomeEnabled(true);
+                getActionBar().setTitle(R.string.recipe);
+            }
             //Retrieving the recipe
             Cursor recipeCursor = getContentResolver()
                     .query(Uri.parse(RecipesContentProvider.CONTENT_URI_RECIPES+"/"+ recipeId),

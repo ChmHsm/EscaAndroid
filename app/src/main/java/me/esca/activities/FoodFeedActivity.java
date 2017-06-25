@@ -22,6 +22,7 @@ import android.text.Layout;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.Toolbar;
 
 import me.esca.R;
 import me.esca.fragments.CookFragment;
@@ -44,6 +45,10 @@ public class FoodFeedActivity extends Activity{
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.food_feed_activity);
+
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        toolbar.setTitle(R.string.app_name);
+        setActionBar(toolbar);
 
         bottomNavigationView = (BottomNavigationView)
                 findViewById(R.id.bottom_foodfeed_navigation);

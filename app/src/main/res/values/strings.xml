@@ -13,5 +13,12 @@
     <string name="network_status_connecting">Connecting</string>
     <string name="network_status_not_connected">Not connected</string>
     <string name="cook_default_name">Gordon</string>
+    <string name="recipe">Recipe</string>
+    <string name="follow">Follow</string>
+    <string name="recipe_title_hint">Recipe title</string>
+    <string name="recipe_ingredients_hint">Ingredients</string>
+    <string name="recipe_instructions_hint">Instructions</string>
+    <string name="recipe_prep_time_hint">Preparation time</string>
+    <string name="recipe_prep_cost_hint">Preparation cost</string>
 </resources>
 

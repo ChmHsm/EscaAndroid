@@ -9,6 +9,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -79,6 +80,7 @@ public class RecipesAdapter extends CursorRecyclerViewAdapter {
         public TextView recipeDescription;
         public TextView recipeDate;
         public TextView cookNameTextView;
+        private TextView followTextView;
         public Long id;
 
         public ViewHolder(View view) {
@@ -87,6 +89,7 @@ public class RecipesAdapter extends CursorRecyclerViewAdapter {
             recipeDescription = (TextView) view.findViewById(R.id.recipe_description_text_view);
             recipeDate = (TextView) view.findViewById(R.id.recipe_date_text_view);
             cookNameTextView = (TextView) view.findViewById(R.id.cook_name_text_view);
+            followTextView = (TextView) view.findViewById(R.id.follow_text_view);
         }
 
         public void setData(Cursor c) {
@@ -105,6 +108,13 @@ public class RecipesAdapter extends CursorRecyclerViewAdapter {
                         cursor.getColumnIndex(CooksTableDefinition.USERNAME_COLUMN)));
                 cursor.close();
             }
+
+            followTextView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Toast.makeText(mContext, "Follow button", Toast.LENGTH_SHORT).show();
+                }
+            });
         }
     }
 }
