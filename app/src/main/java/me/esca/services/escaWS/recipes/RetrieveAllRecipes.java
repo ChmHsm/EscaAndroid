@@ -23,14 +23,15 @@ import me.esca.dbRelated.cook.tableUtils.CooksTableDefinition;
 import me.esca.dbRelated.recipe.tableUtils.RecipesTableDefinition;
 import me.esca.model.Recipe;
 
+import static me.esca.services.escaWS.recipes.Utils.ALL_RECIPES_URL;
+import static me.esca.services.escaWS.recipes.Utils.MAIN_DOMAIN_NAME;
+
+
 /**
  * Created by Me on 02/06/2017.
  */
 //TODO Implement database updating after data is retrieved
 public class RetrieveAllRecipes extends IntentService {
-
-    public static String MAIN_DOMAIN_NAME = "http://escaws.herokuapp.com";
-    private static String ALL_RECIPES_URL = "/general/recipes";
 
     private int result = Activity.RESULT_CANCELED;
     public static final String RESULT = "result";

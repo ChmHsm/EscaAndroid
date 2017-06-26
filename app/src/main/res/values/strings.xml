@@ -20,5 +20,14 @@
     <string name="recipe_instructions_hint">Instructions</string>
     <string name="recipe_prep_time_hint">Preparation time</string>
     <string name="recipe_prep_cost_hint">Preparation cost</string>
+    <string-array name="difficulty_rating_array">
+        <item>Difficulty Level</item>
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>5</item>
+    </string-array>
+    <string name="add_recipe_button_text">Add Recipe</string>
 </resources>
 
