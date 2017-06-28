@@ -52,11 +52,12 @@ public class AddNewRecipeService extends Service {
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
-        return null;
+        new AddNewRecipe().execute();
+        return mBinder;
     }
 
     public class MyBinder extends Binder {
-        AddNewRecipeService getService() {
+        public AddNewRecipeService getService() {
             return AddNewRecipeService.this;
         }
     }
@@ -84,6 +85,8 @@ public class AddNewRecipeService extends Service {
         @Override
         protected void onPostExecute(String s) {
             super.onPostExecute(s);
+            sendBroadcast(new Intent("ServiceIsDone"));
+            stopSelf();
         }
     }
 }
