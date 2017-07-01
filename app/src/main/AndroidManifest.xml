@@ -27,6 +27,8 @@
 
         <service android:name=".services.escaWS.recipes.RetrieveAllRecipes"/>
 
+        <service android:name=".services.escaWS.recipes.AddNewRecipeService"/>
+
         <provider
             android:name=".dbRelated.contentProvider.RecipesContentProvider"
             android:authorities="me.esca.recipes.contentprovider"

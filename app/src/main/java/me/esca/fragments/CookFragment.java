@@ -16,6 +16,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
+import android.widget.Toast;
 
 import me.esca.R;
 import me.esca.model.Recipe;
@@ -73,6 +74,7 @@ public class CookFragment extends Fragment implements ServiceConnection {
                     recipeToBeAdded = new Recipe(recipeTitleEditText.getText().toString(), 0, 0,
                             0, recipeIngredientsEditText.getText().toString(),
                             recipeInstructionsEditText.getText().toString(), null, null, null, null);
+                    addNewRecipeService = new AddNewRecipeService();
                     addNewRecipeService.setRecipeToBeAdded(recipeToBeAdded);
                     Intent service = new Intent(getActivity().getApplicationContext(), AddNewRecipeService.class);
                     getActivity().getApplicationContext().startService(service);
@@ -105,7 +107,7 @@ public class CookFragment extends Fragment implements ServiceConnection {
         @Override
         public void onReceive(Context context, Intent intent) {
             if (intent.getAction().equals("ServiceIsDone")) {
-                // Do stuff - maybe update my view based on the changed DB contents
+                Toast.makeText(getActivity(), "Recipe was added", Toast.LENGTH_SHORT).show();
             }
         }
     }

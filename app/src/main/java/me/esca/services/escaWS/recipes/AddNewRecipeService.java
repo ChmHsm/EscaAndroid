@@ -73,9 +73,13 @@ public class AddNewRecipeService extends Service {
         protected String doInBackground(Void... params) {
 
             RestTemplate restTemplate = new RestTemplate();
-            List<HttpMessageConverter<?>> list = new ArrayList<HttpMessageConverter<?>>();
+            List<HttpMessageConverter<?>> list = new ArrayList<>();
             list.add(new MappingJackson2HttpMessageConverter());
             restTemplate.setMessageConverters(list);
+
+            recipeToBeAdded = new Recipe("Recipe Title", 0, 0,
+                    0, "Recipe Ingredients",
+                    "Recipe Instructions", null, null, null, null);
 
             URI res = restTemplate.postForLocation(MAIN_DOMAIN_NAME+ADD_RECIPE_URL.replace("{username}",
                     loggedUsername), recipeToBeAdded, Recipe.class);
