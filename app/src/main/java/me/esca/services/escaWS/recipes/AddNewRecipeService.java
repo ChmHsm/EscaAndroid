@@ -27,17 +27,18 @@ import static me.esca.services.escaWS.recipes.Utils.MAIN_DOMAIN_NAME;
 public class AddNewRecipeService extends Service {
 
     private final IBinder mBinder = new MyBinder();
-    private String resultLocation;
+    private URI resultLocation;
     private Recipe recipeToBeAdded;
     private String loggedUsername = "Houssam";
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        this.recipeToBeAdded = (Recipe) intent.getSerializableExtra("recipeToBeAdded");
         new AddNewRecipe().execute();
         return Service.START_NOT_STICKY;
     }
 
-    public String getResultLocation() {
+    public URI getResultLocation() {
         return resultLocation;
     }
 
@@ -77,11 +78,7 @@ public class AddNewRecipeService extends Service {
             list.add(new MappingJackson2HttpMessageConverter());
             restTemplate.setMessageConverters(list);
 
-            recipeToBeAdded = new Recipe("Recipe Title", 0, 0,
-                    0, "Recipe Ingredients",
-                    "Recipe Instructions", null, null, null, null);
-
-            URI res = restTemplate.postForLocation(MAIN_DOMAIN_NAME+ADD_RECIPE_URL.replace("{username}",
+            resultLocation = restTemplate.postForLocation(MAIN_DOMAIN_NAME+ADD_RECIPE_URL.replace("{username}",
                     loggedUsername), recipeToBeAdded, Recipe.class);
             return null;
         }
@@ -89,7 +86,9 @@ public class AddNewRecipeService extends Service {
         @Override
         protected void onPostExecute(String s) {
             super.onPostExecute(s);
-            sendBroadcast(new Intent("ServiceIsDone"));
+            Intent intent = new Intent("ServiceIsDone");
+            intent.putExtra("resultLocation", resultLocation.toString());
+            sendBroadcast(intent);
             stopSelf();
         }
     }

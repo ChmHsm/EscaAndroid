@@ -20,6 +20,7 @@ public class ProfileFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
 
         View view = inflater.inflate(R.layout.personal_profile_layout, container, false);
+        if(getActivity().getActionBar() != null )getActivity().getActionBar().show();
         return view;
     }
 }

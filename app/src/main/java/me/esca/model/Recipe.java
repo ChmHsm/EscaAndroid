@@ -2,13 +2,14 @@ package me.esca.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import java.io.Serializable;
 import java.util.Set;
 
 /**
  * Created by Me on 02/06/2017.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class Recipe {
+public class Recipe implements Serializable {
 
     private Long id;
 
@@ -157,4 +158,9 @@ public class Recipe {
     }
 
     private Set<Image> recipeImage;
+
+    @Override
+    public String toString() {
+        return "Recipe [id=" + id + "]";
+    }
 }

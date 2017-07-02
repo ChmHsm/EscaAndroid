@@ -17,6 +17,9 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.Toast;
+import android.widget.Toolbar;
+
+import java.net.URI;
 
 import me.esca.R;
 import me.esca.model.Recipe;
@@ -66,18 +69,26 @@ public class CookFragment extends Fragment implements ServiceConnection {
         recipePreparationCostEditText = (EditText)view.findViewById(R.id.prep_cost_edit_text);
         recipeDifficultyRatingSpinner = (Spinner)view.findViewById(R.id.difficulty_rating_spinner);
 
+        if(getActivity().getActionBar() != null )getActivity().getActionBar().hide();
+
         addRecipeButton = (Button) view.findViewById(R.id.add_recipe_button);
         addRecipeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if(dataValidation()){
-                    recipeToBeAdded = new Recipe(recipeTitleEditText.getText().toString(), 0, 0,
-                            0, recipeIngredientsEditText.getText().toString(),
-                            recipeInstructionsEditText.getText().toString(), null, null, null, null);
+                    recipeToBeAdded = new Recipe(recipeTitleEditText.getText().toString().trim(),
+                            Integer.parseInt(recipeDifficultyRatingSpinner.getSelectedItem().toString()),
+                            Integer.parseInt(recipePreparationTimeEditText.getText().toString().trim()),
+                            Double.valueOf(recipePreparationCostEditText.getText().toString().trim()),
+                            recipeIngredientsEditText.getText().toString().trim(),
+                            recipeInstructionsEditText.getText().toString().trim(), null, null, null, null);
                     addNewRecipeService = new AddNewRecipeService();
-                    addNewRecipeService.setRecipeToBeAdded(recipeToBeAdded);
                     Intent service = new Intent(getActivity().getApplicationContext(), AddNewRecipeService.class);
+                    service.putExtra("recipeToBeAdded", recipeToBeAdded);
                     getActivity().getApplicationContext().startService(service);
+                }
+                else{
+                    Toast.makeText(getActivity(), "Title, ingredients and instructions mandatory.", Toast.LENGTH_SHORT).show();
                 }
             }
         });
@@ -86,9 +97,27 @@ public class CookFragment extends Fragment implements ServiceConnection {
     }
 
     private boolean dataValidation(){
-        return !(recipeTitleEditText.getText().toString().equals("")
-                || recipeIngredientsEditText.getText().toString().equals("")
-                || recipeInstructionsEditText.getText().toString().equals(""));
+        boolean textsValidated = false;
+        boolean numbersValidated = false;
+        boolean variousValidated = true;//Currently not in use but returned, thus has to be true for the moment.
+
+        //Strings validation
+        if(!(recipeTitleEditText.getText().toString().trim().equals("")
+                || recipeIngredientsEditText.getText().toString().trim().equals("")
+                || recipeInstructionsEditText.getText().toString().trim().equals(""))){
+            textsValidated = true;
+        }
+
+        //Numbers validation
+        if (recipeDifficultyRatingSpinner.getSelectedItemPosition() == 0) return false;
+        double prepCost = Double.valueOf(recipePreparationCostEditText.getText().toString().trim());
+        int prepTime = Integer.parseInt(recipePreparationTimeEditText.getText().toString().trim());
+        int difficulty = Integer.parseInt(recipeDifficultyRatingSpinner.getSelectedItem().toString());
+        if(prepCost != 0 && prepTime != 0 && difficulty > 0){
+            numbersValidated = true;
+        }
+
+        return textsValidated && numbersValidated && variousValidated;
 
     }
 
@@ -106,8 +135,10 @@ public class CookFragment extends Fragment implements ServiceConnection {
     private class DataUpdateReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
+            String resultLocation = intent.getStringExtra("resultLocation");
             if (intent.getAction().equals("ServiceIsDone")) {
-                Toast.makeText(getActivity(), "Recipe was added", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getActivity(), "Recipe was added in "
+                        + resultLocation, Toast.LENGTH_SHORT).show();
             }
         }
     }

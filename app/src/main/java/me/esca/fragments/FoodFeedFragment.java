@@ -43,6 +43,8 @@ public class FoodFeedFragment extends Fragment implements LoaderManager.LoaderCa
         LinearLayoutManager mLayoutManager = new LinearLayoutManager(getActivity());
         RecipesAdapter mAdapter = new RecipesAdapter(getActivity(), null);
 
+        if(getActivity().getActionBar() != null )getActivity().getActionBar().show();
+
         callRetrieveAllRecipesService();
 
         mRecyclerView = (RecyclerView) view.findViewById(R.id.food_feed_recycle_view);

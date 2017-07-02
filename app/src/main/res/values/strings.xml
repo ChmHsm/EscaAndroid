@@ -7,6 +7,7 @@
     <string name="text_home">Food Feed</string>
     <string name="text_search">Search</string>
     <string name="text_cook">Cook</string>
+    <string name="text_prefix_cook">Cook</string>
     <string name="text_favorite">Favorite</string>
     <string name="text_profile">Profile</string>
     <string name="network_status_connected">Connected</string>
@@ -18,8 +19,8 @@
     <string name="recipe_title_hint">Recipe title</string>
     <string name="recipe_ingredients_hint">Ingredients</string>
     <string name="recipe_instructions_hint">Instructions</string>
-    <string name="recipe_prep_time_hint">Preparation time</string>
-    <string name="recipe_prep_cost_hint">Preparation cost</string>
+    <string name="recipe_prep_time_hint">Time</string>
+    <string name="recipe_prep_cost_hint">Cost</string>
     <string-array name="difficulty_rating_array">
         <item>Difficulty Level</item>
         <item>1</item>
@@ -30,4 +31,5 @@
     </string-array>
     <string name="add_recipe_button_text">Add Recipe</string>
 </resources>
+
 
