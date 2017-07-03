@@ -15,7 +15,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.SeekBar;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.Toolbar;
 
@@ -36,11 +38,14 @@ public class CookFragment extends Fragment implements ServiceConnection {
     private EditText recipeInstructionsEditText;
     private EditText recipePreparationTimeEditText;
     private EditText recipePreparationCostEditText;
-    private Spinner recipeDifficultyRatingSpinner;
+//    private Spinner recipeDifficultyRatingSpinner;
     private Button addRecipeButton;
     private Recipe recipeToBeAdded;
     private AddNewRecipeService addNewRecipeService;
     private DataUpdateReceiver dataUpdateReceiver;
+    private SeekBar difficultyRatingSeekBar;
+    private TextView difficultyTextView;
+    private int difficultyRating;
 
 
     @Override
@@ -67,9 +72,33 @@ public class CookFragment extends Fragment implements ServiceConnection {
         recipeInstructionsEditText = (EditText)view.findViewById(R.id.instructions_edit_text);
         recipePreparationTimeEditText = (EditText)view.findViewById(R.id.prep_time_edit_text);
         recipePreparationCostEditText = (EditText)view.findViewById(R.id.prep_cost_edit_text);
-        recipeDifficultyRatingSpinner = (Spinner)view.findViewById(R.id.difficulty_rating_spinner);
-
+//        recipeDifficultyRatingSpinner = (Spinner)view.findViewById(R.id.difficulty_rating_spinner);
+        difficultyRatingSeekBar = (SeekBar) view.findViewById(R.id.difficultyRatingSeekBar);
+        difficultyTextView = (TextView)view.findViewById(R.id.difficultyTextView);
+        difficultyTextView.setText(String.valueOf(difficultyRatingSeekBar.getProgress()));
+        difficultyRating = difficultyRatingSeekBar.getProgress();
         if(getActivity().getActionBar() != null )getActivity().getActionBar().hide();
+
+        difficultyRatingSeekBar.setOnSeekBarChangeListener(
+
+                new SeekBar.OnSeekBarChangeListener() {
+                    int progress = 0;
+                    @Override
+                    public void onProgressChanged(SeekBar seekBar,
+                                                  int progressValue, boolean fromUser) {
+                        progress = progressValue;
+                        difficultyTextView.setText(String.valueOf(progressValue));
+                    }
+
+                    @Override
+                    public void onStartTrackingTouch(SeekBar seekBar) {
+
+                    }
+                    @Override
+                    public void onStopTrackingTouch(SeekBar seekBar) {
+                        difficultyRating = progress;
+                    }
+                });
 
         addRecipeButton = (Button) view.findViewById(R.id.add_recipe_button);
         addRecipeButton.setOnClickListener(new View.OnClickListener() {
@@ -77,7 +106,7 @@ public class CookFragment extends Fragment implements ServiceConnection {
             public void onClick(View v) {
                 if(dataValidation()){
                     recipeToBeAdded = new Recipe(recipeTitleEditText.getText().toString().trim(),
-                            Integer.parseInt(recipeDifficultyRatingSpinner.getSelectedItem().toString()),
+                            difficultyRating,
                             Integer.parseInt(recipePreparationTimeEditText.getText().toString().trim()),
                             Double.valueOf(recipePreparationCostEditText.getText().toString().trim()),
                             recipeIngredientsEditText.getText().toString().trim(),
@@ -109,16 +138,15 @@ public class CookFragment extends Fragment implements ServiceConnection {
         }
 
         //Numbers validation
-        if (recipeDifficultyRatingSpinner.getSelectedItemPosition() == 0) return false;
-        double prepCost = Double.valueOf(recipePreparationCostEditText.getText().toString().trim());
-        int prepTime = Integer.parseInt(recipePreparationTimeEditText.getText().toString().trim());
-        int difficulty = Integer.parseInt(recipeDifficultyRatingSpinner.getSelectedItem().toString());
-        if(prepCost != 0 && prepTime != 0 && difficulty > 0){
-            numbersValidated = true;
+        if(!recipePreparationCostEditText.getText().toString().isEmpty()
+                && !recipePreparationCostEditText.getText().toString().isEmpty()) {
+            double prepCost = Double.valueOf(recipePreparationCostEditText.getText().toString().trim());
+            int prepTime = Integer.parseInt(recipePreparationTimeEditText.getText().toString().trim());
+            if(prepCost != 0 && prepTime != 0 && difficultyRating > 0){
+                numbersValidated = true;
+            }
         }
-
         return textsValidated && numbersValidated && variousValidated;
-
     }
 
     @Override
