@@ -57,7 +57,7 @@
             android:elevation="6dp">
 
         <ImageView
-            android:id="@+id/imageView5"
+            android:id="@+id/recipeDetailImageView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:adjustViewBounds="true"

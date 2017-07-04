@@ -8,6 +8,7 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.Toolbar;
@@ -20,6 +21,7 @@ import me.esca.dbRelated.cook.tableUtils.CooksTableDefinition;
 import me.esca.dbRelated.recipe.tableUtils.RecipesTableDefinition;
 import me.esca.model.Cook;
 import me.esca.model.Recipe;
+import me.esca.utils.glide.GlideApp;
 
 /**
  * Created by Me on 24/06/2017.
@@ -30,6 +32,7 @@ public class RecipeDetailsActivity extends Activity{
     private Long cookId;
     private Recipe recipe;
     private Cook cook;
+    private ImageView recipeDetailImageView;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -39,6 +42,14 @@ public class RecipeDetailsActivity extends Activity{
         if(recipeId > 0){
             RecipeDetailsActivityBinding binding = DataBindingUtil
                     .setContentView(this, R.layout.recipe_details_activity);
+
+            recipeDetailImageView = (ImageView) findViewById(R.id.recipeDetailImageView);
+
+            GlideApp.with(this)
+                    .load("http://lorempixel.com/400/200/food/")
+                    .placeholder(getDrawable(R.drawable.tagliatelles_legumes))
+                    .fitCenter()
+                    .into(recipeDetailImageView);
 
             Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
             setActionBar(toolbar);

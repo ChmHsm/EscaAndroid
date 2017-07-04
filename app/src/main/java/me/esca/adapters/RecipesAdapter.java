@@ -8,8 +8,11 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.bumptech.glide.Glide;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,6 +25,7 @@ import me.esca.dbRelated.recipe.tableUtils.RecipesTableDefinition;
 import me.esca.model.Cook;
 import me.esca.model.Recipe;
 import me.esca.utils.CursorRecyclerViewAdapter;
+import me.esca.utils.glide.GlideApp;
 
 /**
  * Created by Me on 04/06/2017.
@@ -76,6 +80,7 @@ public class RecipesAdapter extends CursorRecyclerViewAdapter {
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
+        public ImageView recipeImageView;
         public TextView recipeTitle;
         public TextView recipeDescription;
         public TextView recipeDate;
@@ -85,6 +90,7 @@ public class RecipesAdapter extends CursorRecyclerViewAdapter {
 
         public ViewHolder(View view) {
             super(view);
+            recipeImageView = (ImageView) view.findViewById(R.id.recipeImageView);
             recipeTitle = (TextView) view.findViewById(R.id.recipteTitleTextView);
             recipeDescription = (TextView) view.findViewById(R.id.recipe_description_text_view);
             recipeDate = (TextView) view.findViewById(R.id.recipe_date_text_view);
@@ -93,6 +99,12 @@ public class RecipesAdapter extends CursorRecyclerViewAdapter {
         }
 
         public void setData(Cursor c) {
+            recipeImageView.setImageDrawable(null);
+            GlideApp.with(mContext)
+                    .load("http://lorempixel.com/400/200/food/")
+                    .placeholder(mContext.getDrawable(R.drawable.tagliatelles_legumes))
+                    .fitCenter()
+                    .into(recipeImageView);
             recipeTitle.setText(c.getString(c.getColumnIndex(RecipesTableDefinition.TITLE_COLUMN)));
             recipeDescription.setText(c.getString(c.getColumnIndex(RecipesTableDefinition.INSTRUCTIONS_COLUMN)));
             recipeDate.setText(c.getString(c.getColumnIndex(RecipesTableDefinition.DATE_CREATED_COLUMN)));
