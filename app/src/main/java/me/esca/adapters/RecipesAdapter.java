@@ -13,8 +13,10 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import me.esca.R;
@@ -100,8 +102,11 @@ public class RecipesAdapter extends CursorRecyclerViewAdapter {
 
         public void setData(Cursor c) {
             recipeImageView.setImageDrawable(null);
+
             GlideApp.with(mContext)
                     .load("http://lorempixel.com/400/200/food/")
+                    .diskCacheStrategy(DiskCacheStrategy.NONE)
+                    .skipMemoryCache(true)
                     .placeholder(mContext.getDrawable(R.drawable.tagliatelles_legumes))
                     .fitCenter()
                     .into(recipeImageView);
