@@ -103,17 +103,16 @@ public class RecipesAdapter extends CursorRecyclerViewAdapter {
         public void setData(Cursor c) {
             recipeImageView.setImageDrawable(null);
 
-            GlideApp.with(mContext)
-                    .load("http://lorempixel.com/400/200/food/")
-                    .diskCacheStrategy(DiskCacheStrategy.NONE)
-                    .skipMemoryCache(true)
-                    .placeholder(mContext.getDrawable(R.drawable.tagliatelles_legumes))
-                    .fitCenter()
-                    .into(recipeImageView);
             recipeTitle.setText(c.getString(c.getColumnIndex(RecipesTableDefinition.TITLE_COLUMN)));
             recipeDescription.setText(c.getString(c.getColumnIndex(RecipesTableDefinition.INSTRUCTIONS_COLUMN)));
             recipeDate.setText(c.getString(c.getColumnIndex(RecipesTableDefinition.DATE_CREATED_COLUMN)));
             id = c.getLong(c.getColumnIndex(RecipesTableDefinition.ID_COLUMN));
+            GlideApp.with(mContext)
+                    .load("http://escaws.s3.amazonaws.com/Image storage directory/"+id+".jpg")
+                    .diskCacheStrategy(DiskCacheStrategy.NONE)
+                    .placeholder(mContext.getDrawable(R.drawable.recipe_image_placeholder))
+                    .fitCenter()
+                    .into(recipeImageView);
             Cursor cursor = mContext.getContentResolver().query(
                     Uri.parse(RecipesContentProvider.CONTENT_URI_COOKS+"/"
                             +c.getString(c.getColumnIndex(RecipesTableDefinition.COOK_COLUMN))),

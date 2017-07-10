@@ -46,8 +46,8 @@ public class RecipeDetailsActivity extends Activity{
             recipeDetailImageView = (ImageView) findViewById(R.id.recipeDetailImageView);
 
             GlideApp.with(this)
-                    .load("http://lorempixel.com/400/200/food/")
-                    .placeholder(getDrawable(R.drawable.tagliatelles_legumes))
+                    .load("http://escaws.s3.amazonaws.com/Image storage directory/"+recipeId+".jpg")
+                    .placeholder(getDrawable(R.drawable.recipe_image_placeholder))
                     .fitCenter()
                     .into(recipeDetailImageView);
 

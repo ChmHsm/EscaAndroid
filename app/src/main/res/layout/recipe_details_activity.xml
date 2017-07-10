@@ -58,11 +58,10 @@
 
         <ImageView
             android:id="@+id/recipeDetailImageView"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:adjustViewBounds="true"
-            android:elevation="4dp"
-            android:src="@drawable/tagliatelles_legumes" />
+            android:elevation="4dp"/>
 
         </android.support.v7.widget.CardView>
 

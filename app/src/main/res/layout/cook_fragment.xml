@@ -221,17 +221,22 @@
                         android:max="5"
                         android:progress="2"/>
 
-                    <!--<Spinner-->
-                        <!--android:id="@+id/difficulty_rating_spinner"-->
-                        <!--android:layout_width="match_parent"-->
-                        <!--android:layout_height="wrap_content"-->
-                        <!--android:layout_gravity="center"-->
-                        <!--android:layout_margin="10dp"-->
-                        <!--android:entries="@array/difficulty_rating_array" />-->
-
                 </LinearLayout>
 
+                <ImageView
+                    android:id="@+id/recipeImageView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:adjustViewBounds="true"
+                    android:elevation="4dp" />
 
+                <Button
+                    android:id="@+id/add_image_button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:text="@string/add_image_button_text"
+                    android:textColor="@color/white" />
 
                 <Button
                     android:id="@+id/add_recipe_button"
@@ -241,6 +246,9 @@
                     android:text="@string/add_recipe_button_text"
                     android:textColor="@color/white" />
             </LinearLayout>
+
+
+
         </ScrollView>
 
     </LinearLayout>

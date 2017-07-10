@@ -49,9 +49,4 @@ dependencies {
     annotationProcessor 'com.github.bumptech.glide:compiler:4.0.0-RC1'
 }
 
-repositories {
-    maven {
-        url 'https://repo.spring.io/libs-milestone'
-    }
-    mavenCentral()
-}
+

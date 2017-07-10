@@ -7,6 +7,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
@@ -15,17 +18,23 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.Toolbar;
 
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.net.URI;
 
 import me.esca.R;
+import me.esca.model.Image;
 import me.esca.model.Recipe;
 import me.esca.services.escaWS.recipes.AddNewRecipeService;
+
+import static android.app.Activity.RESULT_OK;
 
 /**
  * Created by Me on 18/06/2017.
@@ -46,6 +55,10 @@ public class CookFragment extends Fragment implements ServiceConnection {
     private SeekBar difficultyRatingSeekBar;
     private TextView difficultyTextView;
     private int difficultyRating;
+    private Button addImageButton;
+    private int RESULT_LOAD_IMG = 1;
+    private ImageView recipeImageView;
+    private Uri imageUri;
 
 
     @Override
@@ -78,7 +91,7 @@ public class CookFragment extends Fragment implements ServiceConnection {
         difficultyTextView.setText(String.valueOf(difficultyRatingSeekBar.getProgress()));
         difficultyRating = difficultyRatingSeekBar.getProgress();
         if(getActivity().getActionBar() != null )getActivity().getActionBar().hide();
-
+        recipeImageView = (ImageView) view.findViewById(R.id.recipeImageView);
         difficultyRatingSeekBar.setOnSeekBarChangeListener(
 
                 new SeekBar.OnSeekBarChangeListener() {
@@ -122,7 +135,38 @@ public class CookFragment extends Fragment implements ServiceConnection {
             }
         });
 
+        addImageButton = (Button) view.findViewById(R.id.add_image_button);
+        addImageButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent photoPickerIntent = new Intent(Intent.ACTION_PICK);
+                photoPickerIntent.setType("image/*");
+                startActivityForResult(photoPickerIntent, RESULT_LOAD_IMG);
+            }
+        });
+
         return view;
+    }
+
+    @Override
+    public void onActivityResult(int reqCode, int resultCode, Intent data) {
+        super.onActivityResult(reqCode, resultCode, data);
+        if(reqCode == RESULT_LOAD_IMG){
+            if (resultCode == RESULT_OK) {
+                try {
+                    imageUri = data.getData();
+                    final InputStream imageStream = getActivity().getContentResolver().openInputStream(imageUri);
+                    final Bitmap selectedImage = BitmapFactory.decodeStream(imageStream);
+                    recipeImageView.setImageBitmap(selectedImage);
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                    Toast.makeText(getActivity(), "Something went wrong", Toast.LENGTH_LONG).show();
+                }
+
+            }else {
+                Toast.makeText(getActivity(), "You haven't picked Image",Toast.LENGTH_LONG).show();
+            }
+        }
     }
 
     private boolean dataValidation(){
@@ -163,10 +207,13 @@ public class CookFragment extends Fragment implements ServiceConnection {
     private class DataUpdateReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
-            String resultLocation = intent.getStringExtra("resultLocation");
             if (intent.getAction().equals("ServiceIsDone")) {
+                String resultLocation = intent.getStringExtra("resultLocation");
                 Toast.makeText(getActivity(), "Recipe was added in "
                         + resultLocation, Toast.LENGTH_SHORT).show();
+            }
+            if(intent.getAction().equals("ImageServiceIsDone")){
+                Toast.makeText(getActivity(), "Image was uploaded ", Toast.LENGTH_SHORT).show();
             }
         }
     }
