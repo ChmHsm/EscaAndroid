@@ -6,7 +6,6 @@ import android.content.ContentValues;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
-import android.os.Bundle;
 import android.support.annotation.Nullable;
 
 import org.springframework.core.ParameterizedTypeReference;
@@ -16,15 +15,14 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Exchanger;
 
 import me.esca.dbRelated.contentProvider.RecipesContentProvider;
 import me.esca.dbRelated.cook.tableUtils.CooksTableDefinition;
 import me.esca.dbRelated.recipe.tableUtils.RecipesTableDefinition;
 import me.esca.model.Recipe;
 
-import static me.esca.services.escaWS.recipes.Utils.ALL_RECIPES_URL;
-import static me.esca.services.escaWS.recipes.Utils.MAIN_DOMAIN_NAME;
+import static me.esca.services.escaWS.Utils.ALL_RECIPES_URL;
+import static me.esca.services.escaWS.Utils.MAIN_DOMAIN_NAME;
 
 
 /**

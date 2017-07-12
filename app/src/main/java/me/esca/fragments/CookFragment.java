@@ -20,14 +20,11 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.SeekBar;
-import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.Toolbar;
 
 import java.io.FileNotFoundException;
 import java.io.InputStream;
-import java.net.URI;
 
 import me.esca.R;
 import me.esca.model.Image;
@@ -47,7 +44,6 @@ public class CookFragment extends Fragment implements ServiceConnection {
     private EditText recipeInstructionsEditText;
     private EditText recipePreparationTimeEditText;
     private EditText recipePreparationCostEditText;
-//    private Spinner recipeDifficultyRatingSpinner;
     private Button addRecipeButton;
     private Recipe recipeToBeAdded;
     private AddNewRecipeService addNewRecipeService;
@@ -59,6 +55,7 @@ public class CookFragment extends Fragment implements ServiceConnection {
     private int RESULT_LOAD_IMG = 1;
     private ImageView recipeImageView;
     private Uri imageUri;
+    private Image imageToBeAdded;
 
 
     @Override
@@ -124,9 +121,13 @@ public class CookFragment extends Fragment implements ServiceConnection {
                             Double.valueOf(recipePreparationCostEditText.getText().toString().trim()),
                             recipeIngredientsEditText.getText().toString().trim(),
                             recipeInstructionsEditText.getText().toString().trim(), null, null, null, null);
+                    imageToBeAdded = new Image(null, imageUri.getPath(), imageUri.getPath(),
+                            null, null, true, null, recipeToBeAdded);
                     addNewRecipeService = new AddNewRecipeService();
                     Intent service = new Intent(getActivity().getApplicationContext(), AddNewRecipeService.class);
                     service.putExtra("recipeToBeAdded", recipeToBeAdded);
+                    service.putExtra("imageToBeAdded", imageToBeAdded);
+                    service.putExtra("recipeImageUrl", imageUri.getPath());
                     getActivity().getApplicationContext().startService(service);
                 }
                 else{
