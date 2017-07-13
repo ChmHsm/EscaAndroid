@@ -1,5 +1,7 @@
 package me.esca.fragments;
 
+import android.Manifest;
+import android.app.Activity;
 import android.app.Fragment;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
@@ -7,12 +9,16 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.app.ActivityCompat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -56,6 +62,10 @@ public class CookFragment extends Fragment implements ServiceConnection {
     private ImageView recipeImageView;
     private Uri imageUri;
     private Image imageToBeAdded;
+    private static final int REQUEST_EXTERNAL_STORAGE = 17;
+    private static String[] PERMISSIONS_STORAGE = {
+            Manifest.permission.READ_EXTERNAL_STORAGE
+    };
 
 
     @Override
@@ -127,7 +137,7 @@ public class CookFragment extends Fragment implements ServiceConnection {
                     Intent service = new Intent(getActivity().getApplicationContext(), AddNewRecipeService.class);
                     service.putExtra("recipeToBeAdded", recipeToBeAdded);
                     service.putExtra("imageToBeAdded", imageToBeAdded);
-                    service.putExtra("recipeImageUrl", imageUri.getPath());
+                    service.putExtra("recipeImageUrl", imageUri.toString());
                     getActivity().getApplicationContext().startService(service);
                 }
                 else{
@@ -140,13 +150,30 @@ public class CookFragment extends Fragment implements ServiceConnection {
         addImageButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent photoPickerIntent = new Intent(Intent.ACTION_PICK);
-                photoPickerIntent.setType("image/*");
-                startActivityForResult(photoPickerIntent, RESULT_LOAD_IMG);
+                if(verifyStoragePermissions(getActivity())){
+                    Intent photoPickerIntent = new Intent(Intent.ACTION_PICK);
+                    photoPickerIntent.setType("image/*");
+                    startActivityForResult(photoPickerIntent, RESULT_LOAD_IMG);
+                }
             }
         });
 
         return view;
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (requestCode == REQUEST_EXTERNAL_STORAGE) {
+            if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                Intent photoPickerIntent = new Intent(Intent.ACTION_PICK);
+                photoPickerIntent.setType("image/*");
+                startActivityForResult(photoPickerIntent, RESULT_LOAD_IMG);
+            } else {
+                Toast.makeText(getActivity(), "PERMISSION_DENIED", Toast.LENGTH_SHORT).show();
+            }
+        }
     }
 
     @Override
@@ -217,5 +244,22 @@ public class CookFragment extends Fragment implements ServiceConnection {
                 Toast.makeText(getActivity(), "Image was uploaded ", Toast.LENGTH_SHORT).show();
             }
         }
+    }
+
+    public static boolean verifyStoragePermissions(Activity activity) {
+        // Check if we have read or write permission
+        int readPermission = ActivityCompat.checkSelfPermission(activity, Manifest.permission.READ_EXTERNAL_STORAGE);
+
+        if (readPermission != PackageManager.PERMISSION_GRANTED) {
+            // We don't have permission so prompt the user
+
+            ActivityCompat.requestPermissions(
+                    activity,
+                    PERMISSIONS_STORAGE,
+                    REQUEST_EXTERNAL_STORAGE
+            );
+            return false;
+        }
+        return true;
     }
 }

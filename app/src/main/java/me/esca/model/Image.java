@@ -27,6 +27,16 @@ public class Image implements Serializable {
 
     private Recipe recipe;
 
+    private String extension;
+
+    public String getExtension() {
+        return extension;
+    }
+
+    public void setExtension(String extension) {
+        this.extension = extension;
+    }
+
     public Image(Long id, String originalName, String originalPath, String dateCreated, String lastUpdated, boolean isMainPicture, Cook cook, Recipe recipe) {
         this.id = id;
         this.originalName = originalName;
