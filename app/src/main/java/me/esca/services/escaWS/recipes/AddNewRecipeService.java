@@ -23,6 +23,9 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.client.RestTemplate;
@@ -30,6 +33,7 @@ import org.springframework.web.client.RestTemplate;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.ArrayList;
@@ -39,6 +43,7 @@ import java.util.Map;
 
 import me.esca.model.Image;
 import me.esca.model.Recipe;
+import me.esca.utils.Accessors;
 
 import static me.esca.services.escaWS.Utils.ADD_IMAGE_URL;
 import static me.esca.services.escaWS.Utils.ADD_RECIPE_URL;
@@ -119,10 +124,17 @@ public class AddNewRecipeService extends Service {
             imageResponse = restTemplate.postForObject(MAIN_DOMAIN_NAME+ADD_IMAGE_URL.replace("{recipeId}",
                     String.valueOf(id)), imageToBeAdded, Image.class);
 
-
+            String pool = "";
+            try {
+                JSONArray jsonArray = new JSONArray(Accessors.loadJSONFromAsset(getApplicationContext()));
+                JSONObject jsonObject = jsonArray.getJSONObject(0);
+                pool = jsonObject.getString("syek3SSWA");
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
             CognitoCachingCredentialsProvider credentialsProvider = new CognitoCachingCredentialsProvider(
                     getApplicationContext(),
-                    "us-east-1:e7f51748-13c0-473d-8f34-c85f5a96fc2a", // Identity pool ID
+                    pool, // Identity pool ID
                     Regions.US_EAST_1 // Region
             );
             AmazonS3 s3 = new AmazonS3Client(credentialsProvider);
@@ -153,8 +165,6 @@ public class AddNewRecipeService extends Service {
             sendBroadcast(intent);
             stopSelf();
         }
-
-
 
         public  String getPath(final Context context, final Uri uri) {
 
