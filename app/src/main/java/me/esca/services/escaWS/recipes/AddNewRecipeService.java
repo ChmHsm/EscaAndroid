@@ -44,6 +44,7 @@ import java.util.Map;
 import me.esca.model.Image;
 import me.esca.model.Recipe;
 import me.esca.utils.Accessors;
+import me.esca.utils.security.cryptography.Encryption;
 
 import static me.esca.services.escaWS.Utils.ADD_IMAGE_URL;
 import static me.esca.services.escaWS.Utils.ADD_RECIPE_URL;
@@ -117,7 +118,6 @@ public class AddNewRecipeService extends Service {
             resultLocation = restTemplate.postForLocation(MAIN_DOMAIN_NAME+ADD_RECIPE_URL.replace("{username}",
                     loggedUsername), recipeToBeAdded, Recipe.class);
 
-            //TODO Add image to Rest WS then to the AWS S3 Bucket
             Long id = Long.parseLong(resultLocation.getPath().substring(resultLocation.getPath().lastIndexOf("/") + 1));
             String imagePath = getPath(getApplicationContext(), imageUri);
             imageToBeAdded.setExtension(imagePath.substring(imagePath.lastIndexOf(".")));
@@ -129,6 +129,7 @@ public class AddNewRecipeService extends Service {
                 JSONArray jsonArray = new JSONArray(Accessors.loadJSONFromAsset(getApplicationContext()));
                 JSONObject jsonObject = jsonArray.getJSONObject(0);
                 pool = jsonObject.getString("syek3SSWA");
+                pool = Encryption.decrypt(pool);
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -149,10 +150,10 @@ public class AddNewRecipeService extends Service {
             TransferUtility transferUtility = new TransferUtility(s3, getApplicationContext());
             TransferObserver observer = transferUtility.upload(
                     "escaws",     /* The bucket to upload to */
-                    "Image storage directory/" + String.valueOf(imageResponse.getId()+imageResponse.getExtension()),    /* The key for the uploaded object */
+                    "Image storage directory/" + String.valueOf(imageResponse.getId()
+                            +imageResponse.getExtension()),
                     imageFile,        /* The file where the data to upload exists */
                     myObjectMetadata);
-
 
             return null;
         }
