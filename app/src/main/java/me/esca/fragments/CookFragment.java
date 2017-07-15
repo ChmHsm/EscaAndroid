@@ -2,10 +2,14 @@ package me.esca.fragments;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.app.DialogFragment;
 import android.app.Fragment;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
@@ -66,6 +70,7 @@ public class CookFragment extends Fragment implements ServiceConnection {
     private static String[] PERMISSIONS_STORAGE = {
             Manifest.permission.READ_EXTERNAL_STORAGE
     };
+    private String messageBody = "";
 
 
     @Override
@@ -141,7 +146,7 @@ public class CookFragment extends Fragment implements ServiceConnection {
                     getActivity().getApplicationContext().startService(service);
                 }
                 else{
-                    Toast.makeText(getActivity(), "Title, ingredients and instructions mandatory.", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getActivity(), messageBody, Toast.LENGTH_SHORT).show();
                 }
             }
         });
@@ -187,12 +192,13 @@ public class CookFragment extends Fragment implements ServiceConnection {
                     final Bitmap selectedImage = BitmapFactory.decodeStream(imageStream);
                     recipeImageView.setImageBitmap(selectedImage);
                 } catch (FileNotFoundException e) {
+                    imageUri = null;
                     e.printStackTrace();
-                    Toast.makeText(getActivity(), "Something went wrong", Toast.LENGTH_LONG).show();
+                    Toast.makeText(getActivity(), "Couldn't retrieve image", Toast.LENGTH_LONG).show();
                 }
-
             }else {
-                Toast.makeText(getActivity(), "You haven't picked Image",Toast.LENGTH_LONG).show();
+                Toast.makeText(getActivity(), "No image was picked",Toast.LENGTH_LONG).show();
+                imageUri = null;
             }
         }
     }
@@ -200,24 +206,43 @@ public class CookFragment extends Fragment implements ServiceConnection {
     private boolean dataValidation(){
         boolean textsValidated = false;
         boolean numbersValidated = false;
-        boolean variousValidated = true;//Currently not in use but returned, thus has to be true for the moment.
+        boolean variousValidated = false;//Currently not in use but returned, thus has to be true for the moment.
+        messageBody = "";
 
         //Strings validation
         if(!(recipeTitleEditText.getText().toString().trim().equals("")
                 || recipeIngredientsEditText.getText().toString().trim().equals("")
                 || recipeInstructionsEditText.getText().toString().trim().equals(""))){
             textsValidated = true;
+        }else{
+            messageBody = "Title, ingredients, instructions, ";
         }
 
         //Numbers validation
         if(!recipePreparationCostEditText.getText().toString().isEmpty()
-                && !recipePreparationCostEditText.getText().toString().isEmpty()) {
+                && !recipePreparationTimeEditText.getText().toString().isEmpty()) {
             double prepCost = Double.valueOf(recipePreparationCostEditText.getText().toString().trim());
             int prepTime = Integer.parseInt(recipePreparationTimeEditText.getText().toString().trim());
             if(prepCost != 0 && prepTime != 0 && difficultyRating > 0){
                 numbersValidated = true;
             }
         }
+        else{
+            messageBody = messageBody + "cost, time, ";
+        }
+
+        if(imageUri != null){
+            variousValidated = true;
+        }
+        else{
+            messageBody = messageBody + "image, ";
+        }
+        messageBody = messageBody.substring(0, messageBody.length() - 2);
+        if(textsValidated && numbersValidated && !variousValidated)
+        messageBody = messageBody + " is mandatory!";
+        else messageBody = messageBody + " are mandatory!";
+        messageBody = messageBody.substring(0, 1).toUpperCase() + messageBody.substring(1).toLowerCase();
+
         return textsValidated && numbersValidated && variousValidated;
     }
 

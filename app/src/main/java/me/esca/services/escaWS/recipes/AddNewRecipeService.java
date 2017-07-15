@@ -145,7 +145,6 @@ public class AddNewRecipeService extends Service {
             Map<String, String> userMetadata = new HashMap<String,String>();
             userMetadata.put("metadata","metadata");
             myObjectMetadata.setUserMetadata(userMetadata);
-            //TODO get the image file from imageUrl
             File imageFile = new File(imagePath);
             TransferUtility transferUtility = new TransferUtility(s3, getApplicationContext());
             TransferObserver observer = transferUtility.upload(
