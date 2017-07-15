@@ -33,12 +33,16 @@ public class RecipeDetailsActivity extends Activity{
     private Recipe recipe;
     private Cook cook;
     private ImageView recipeDetailImageView;
+    private Long imageId;
+    private String imageExtension;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         recipeId = getIntent().getLongExtra("recipeId", 0);
+        imageId = getIntent().getLongExtra("imageId", 0);
+        imageExtension = getIntent().getStringExtra("imageExtension");
         if(recipeId > 0){
             RecipeDetailsActivityBinding binding = DataBindingUtil
                     .setContentView(this, R.layout.recipe_details_activity);
@@ -46,7 +50,7 @@ public class RecipeDetailsActivity extends Activity{
             recipeDetailImageView = (ImageView) findViewById(R.id.recipeDetailImageView);
 
             GlideApp.with(this)
-                    .load("http://escaws.s3.amazonaws.com/Image storage directory/"+recipeId+".jpg")
+                    .load("http://escaws.s3.amazonaws.com/Image storage directory/"+imageId+imageExtension)
                     .placeholder(getDrawable(R.drawable.recipe_image_placeholder))
                     .fitCenter()
                     .into(recipeDetailImageView);

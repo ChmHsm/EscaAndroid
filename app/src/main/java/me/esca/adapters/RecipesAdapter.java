@@ -69,14 +69,17 @@ public class RecipesAdapter extends CursorRecyclerViewAdapter {
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Long recipeId;
-                recipeId = ((ViewHolder) viewHolder).id;
+                Long recipeId = ((ViewHolder) viewHolder).id;
+                Long imageId = ((ViewHolder) viewHolder).imageId;
+                String imageExtension = ((ViewHolder) viewHolder).imageExtension;
                 if(recipeId <= 0){
                     throw new IllegalArgumentException();
                 }
                 else{
                     Intent intent = new Intent(mContext, RecipeDetailsActivity.class);
                     intent.putExtra("recipeId",recipeId);
+                    intent.putExtra("imageId", imageId);
+                    intent.putExtra("imageExtension", imageExtension);
                     mContext.startActivity(intent);
                 }
             }
@@ -101,6 +104,8 @@ public class RecipesAdapter extends CursorRecyclerViewAdapter {
         public TextView cookNameTextView;
         private TextView followTextView;
         public Long id;
+        public Long imageId;
+        public String imageExtension;
 
         public ViewHolder(View view) {
             super(view);
@@ -162,6 +167,8 @@ public class RecipesAdapter extends CursorRecyclerViewAdapter {
             @Override
             protected void onPostExecute(Image image) {
                 super.onPostExecute(image);
+                imageId = image.getId();
+                imageExtension = image.getExtension();
                 GlideApp.with(mContext)
                         .load("http://escaws.s3.amazonaws.com/Image storage directory/"+image.getId()+image.getExtension())
                         .fitCenter()
