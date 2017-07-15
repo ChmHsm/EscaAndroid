@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,6 +15,12 @@ import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.load.resource.drawable.DrawableResource;
+
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -25,9 +32,14 @@ import me.esca.dbRelated.contentProvider.RecipesContentProvider;
 import me.esca.dbRelated.cook.tableUtils.CooksTableDefinition;
 import me.esca.dbRelated.recipe.tableUtils.RecipesTableDefinition;
 import me.esca.model.Cook;
+import me.esca.model.Image;
 import me.esca.model.Recipe;
 import me.esca.utils.CursorRecyclerViewAdapter;
 import me.esca.utils.glide.GlideApp;
+
+import static me.esca.services.escaWS.Utils.ALL_RECIPES_URL;
+import static me.esca.services.escaWS.Utils.GET_IMAGE_URL;
+import static me.esca.services.escaWS.Utils.MAIN_DOMAIN_NAME;
 
 /**
  * Created by Me on 04/06/2017.
@@ -101,18 +113,13 @@ public class RecipesAdapter extends CursorRecyclerViewAdapter {
         }
 
         public void setData(Cursor c) {
-            recipeImageView.setImageDrawable(null);
+            recipeImageView.setImageDrawable(mContext.getDrawable(R.drawable.recipe_image_placeholder));
 
             recipeTitle.setText(c.getString(c.getColumnIndex(RecipesTableDefinition.TITLE_COLUMN)));
             recipeDescription.setText(c.getString(c.getColumnIndex(RecipesTableDefinition.INSTRUCTIONS_COLUMN)));
             recipeDate.setText(c.getString(c.getColumnIndex(RecipesTableDefinition.DATE_CREATED_COLUMN)));
             id = c.getLong(c.getColumnIndex(RecipesTableDefinition.ID_COLUMN));
-            GlideApp.with(mContext)
-                    .load("http://escaws.s3.amazonaws.com/Image storage directory/"+id+".jpg")
-                    .diskCacheStrategy(DiskCacheStrategy.NONE)
-                    .placeholder(mContext.getDrawable(R.drawable.recipe_image_placeholder))
-                    .fitCenter()
-                    .into(recipeImageView);
+            new GetRecipeImage().execute(id);
             Cursor cursor = mContext.getContentResolver().query(
                     Uri.parse(RecipesContentProvider.CONTENT_URI_COOKS+"/"
                             +c.getString(c.getColumnIndex(RecipesTableDefinition.COOK_COLUMN))),
@@ -131,6 +138,35 @@ public class RecipesAdapter extends CursorRecyclerViewAdapter {
                     Toast.makeText(mContext, "Follow button", Toast.LENGTH_SHORT).show();
                 }
             });
+        }
+
+        private class GetRecipeImage extends AsyncTask<Long, Image, Image>{
+
+            @Override
+            protected void onPreExecute() {
+                super.onPreExecute();
+            }
+
+            @Override
+            protected Image doInBackground(Long[] params) {
+                RestTemplate restTemplate = new RestTemplate();
+                ResponseEntity<Image> response =
+                        restTemplate.exchange(MAIN_DOMAIN_NAME+GET_IMAGE_URL.replace("{recipeId}",
+                                String.valueOf(params[0])),
+                                HttpMethod.GET, null, new ParameterizedTypeReference<Image>() {
+                                });
+
+                return response != null ? response.getBody() : null;
+            }
+
+            @Override
+            protected void onPostExecute(Image image) {
+                super.onPostExecute(image);
+                GlideApp.with(mContext)
+                        .load("http://escaws.s3.amazonaws.com/Image storage directory/"+image.getId()+image.getExtension())
+                        .fitCenter()
+                        .into(recipeImageView);
+            }
         }
     }
 }

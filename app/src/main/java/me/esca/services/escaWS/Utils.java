@@ -9,4 +9,5 @@ public class Utils {
     public static String ALL_RECIPES_URL = "/general/recipes/20";
     public static String ADD_RECIPE_URL = "/{username}/recipes";
     public static String ADD_IMAGE_URL = "/general/recipes/{recipeId}/recipeMainImage";
+    public static String GET_IMAGE_URL = "/general/recipes/{recipeId}/recipeMainImage";
 }

@@ -237,7 +237,7 @@ public class CookFragment extends Fragment implements ServiceConnection {
         else{
             messageBody = messageBody + "image, ";
         }
-        messageBody = messageBody.substring(0, messageBody.length() - 2);
+        if(messageBody.length() > 2) messageBody = messageBody.substring(0, messageBody.length() - 2);
         if(textsValidated && numbersValidated && !variousValidated)
         messageBody = messageBody + " is mandatory!";
         else messageBody = messageBody + " are mandatory!";
