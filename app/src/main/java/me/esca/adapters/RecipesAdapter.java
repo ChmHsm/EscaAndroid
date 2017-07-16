@@ -22,9 +22,11 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import me.esca.R;
 import me.esca.activities.RecipeDetailsActivity;
@@ -35,6 +37,7 @@ import me.esca.model.Cook;
 import me.esca.model.Image;
 import me.esca.model.Recipe;
 import me.esca.utils.CursorRecyclerViewAdapter;
+import me.esca.utils.DateFormatting;
 import me.esca.utils.glide.GlideApp;
 
 import static me.esca.services.escaWS.Utils.ALL_RECIPES_URL;
@@ -122,7 +125,9 @@ public class RecipesAdapter extends CursorRecyclerViewAdapter {
 
             recipeTitle.setText(c.getString(c.getColumnIndex(RecipesTableDefinition.TITLE_COLUMN)));
             recipeDescription.setText(c.getString(c.getColumnIndex(RecipesTableDefinition.INSTRUCTIONS_COLUMN)));
-            recipeDate.setText(c.getString(c.getColumnIndex(RecipesTableDefinition.DATE_CREATED_COLUMN)));
+
+            recipeDate.setText(DateFormatting.formatDateTime(c.getString(
+                    c.getColumnIndex(RecipesTableDefinition.DATE_CREATED_COLUMN))));
             id = c.getLong(c.getColumnIndex(RecipesTableDefinition.ID_COLUMN));
             new GetRecipeImage().execute(id);
             Cursor cursor = mContext.getContentResolver().query(
@@ -143,6 +148,7 @@ public class RecipesAdapter extends CursorRecyclerViewAdapter {
                     Toast.makeText(mContext, "Follow button", Toast.LENGTH_SHORT).show();
                 }
             });
+
         }
 
         private class GetRecipeImage extends AsyncTask<Long, Image, Image>{

@@ -77,7 +77,7 @@ public class FoodFeedFragment extends Fragment implements LoaderManager.LoaderCa
         switch (id) {
             case 0:
                 return new CursorLoader(getActivity(), RecipesContentProvider.CONTENT_URI_RECIPES, null,
-                        null, null, null);
+                        null, null, "dateCreated desc");
             default:
                 throw new IllegalArgumentException("no id handled!");
         }
