@@ -6,6 +6,7 @@ import android.content.ContentValues;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Bundle;
 import android.support.annotation.Nullable;
 
 import org.springframework.core.ParameterizedTypeReference;
@@ -55,7 +56,7 @@ public class RetrieveAllRecipes extends IntentService {
                             });
             recipeList = response.getBody();
 
-            getContentResolver().delete(RecipesContentProvider.CONTENT_URI_RECIPES, null, null);
+//            getContentResolver().delete(RecipesContentProvider.CONTENT_URI_RECIPES, null, null);
             insertEntities(recipeList);
             publishResults(Activity.RESULT_OK);
         }
@@ -110,6 +111,10 @@ public class RetrieveAllRecipes extends IntentService {
             }
             if(cursor != null) cursor.close();
         }
-        return getContentResolver().bulkInsert(RecipesContentProvider.CONTENT_URI_RECIPES, recipesContentValues);
+//        return getContentResolver().bulkInsert(RecipesContentProvider.CONTENT_URI_RECIPES, recipesContentValues);
+        Bundle bundle = new Bundle();
+        bundle.putSerializable("recipes", recipesContentValues);
+        getContentResolver().call(RecipesContentProvider.CONTENT_URI_RECIPES, "bulkSaveOrUpdateRecipe", null, bundle);
+        return 0;
     }
 }
