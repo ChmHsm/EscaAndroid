@@ -408,7 +408,6 @@ public class RecipesContentProvider extends ContentProvider {
         return null;
     }
 
-    //TODO test method (Couldn't test it for accessibility constraints)
     public Uri saveOrUpdate(@NonNull ContentValues values) throws InvalidKeyException {
 
         if (!values.containsKey(RecipesTableDefinition.ID_COLUMN))
@@ -436,7 +435,6 @@ public class RecipesContentProvider extends ContentProvider {
         }
     }
 
-    //TODO Test method (Couldn't test it for accessibility constraints)
     public int bulkSaveOrUpdate(@NonNull ContentValues[] values) {
 
         int insertCount = 0;

@@ -97,7 +97,6 @@ public class CookFragment extends Fragment implements ServiceConnection {
         recipeInstructionsEditText = (EditText)view.findViewById(R.id.instructions_edit_text);
         recipePreparationTimeEditText = (EditText)view.findViewById(R.id.prep_time_edit_text);
         recipePreparationCostEditText = (EditText)view.findViewById(R.id.prep_cost_edit_text);
-//        recipeDifficultyRatingSpinner = (Spinner)view.findViewById(R.id.difficulty_rating_spinner);
         difficultyRatingSeekBar = (SeekBar) view.findViewById(R.id.difficultyRatingSeekBar);
         difficultyTextView = (TextView)view.findViewById(R.id.difficultyTextView);
         difficultyTextView.setText(String.valueOf(difficultyRatingSeekBar.getProgress()));
