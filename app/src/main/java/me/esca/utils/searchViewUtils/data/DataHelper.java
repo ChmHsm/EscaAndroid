@@ -130,32 +130,25 @@ public class DataHelper {
 
 
     public static void findColors(Context context, String query, final OnFindColorsListener listener) {
-        initColorWrapperList(context);
 
+        initColorWrapperList(context);
         new Filter() {
 
             @Override
             protected FilterResults performFiltering(CharSequence constraint) {
-
-
                 List<ColorWrapper> suggestionList = new ArrayList<>();
 
                 if (!(constraint == null || constraint.length() == 0)) {
-
                     for (ColorWrapper color : sColorWrappers) {
                         if (color.getName().toUpperCase()
                                 .startsWith(constraint.toString().toUpperCase())) {
-
                             suggestionList.add(color);
                         }
                     }
-
                 }
-
                 FilterResults results = new FilterResults();
                 results.values = suggestionList;
                 results.count = suggestionList.size();
-
                 return results;
             }
 
@@ -200,7 +193,6 @@ public class DataHelper {
     private static List<ColorWrapper> deserializeColors(String jsonString) {
 
         Gson gson = new Gson();
-
         Type collectionType = new TypeToken<List<ColorWrapper>>() {
         }.getType();
         return gson.fromJson(jsonString, collectionType);
