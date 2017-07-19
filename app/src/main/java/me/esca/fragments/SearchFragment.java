@@ -27,10 +27,11 @@ import com.arlib.floatingsearchview.FloatingSearchView;
 import com.arlib.floatingsearchview.suggestions.SearchSuggestionsAdapter;
 import com.arlib.floatingsearchview.suggestions.model.SearchSuggestion;
 import com.arlib.floatingsearchview.util.Util;
-import me.esca.utils.searchViewUtils.adapter.SearchResultsListAdapter;
-import me.esca.utils.searchViewUtils.data.ColorSuggestion;
+
+import me.esca.utils.searchViewUtils.adapter.RecipesSearchResultsAdapter;
+import me.esca.utils.searchViewUtils.data.RecipesSuggestion;
 import me.esca.utils.searchViewUtils.data.ColorWrapper;
-import me.esca.utils.searchViewUtils.data.DataHelper;
+import me.esca.utils.searchViewUtils.data.RecipesDataHelper;
 
 import java.util.List;
 
@@ -49,7 +50,7 @@ public class SearchFragment extends Fragment {
     private FloatingSearchView mSearchView;
 
     private RecyclerView mSearchResultsList;
-    private SearchResultsListAdapter mSearchResultsAdapter;
+    private RecipesSearchResultsAdapter mSearchResultsAdapter;
 
     private boolean mIsDarkSearchTheme = false;
 
@@ -97,11 +98,11 @@ public class SearchFragment extends Fragment {
 
                     //simulates a query call to a data source
                     //with a new query.
-                    DataHelper.findSuggestions(getActivity(), newQuery, 5,
-                            FIND_SUGGESTION_SIMULATED_DELAY, new DataHelper.OnFindSuggestionsListener() {
+                    RecipesDataHelper.findSuggestions(getActivity(), newQuery, 5,
+                            FIND_SUGGESTION_SIMULATED_DELAY, new RecipesDataHelper.OnFindSuggestionsListener() {
 
                                 @Override
-                                public void onResults(List<ColorSuggestion> results) {
+                                public void onResults(List<RecipesSuggestion> results) {
 
                                     //this will swap the data and
                                     //render the collapse/expand animations as necessary
@@ -122,9 +123,9 @@ public class SearchFragment extends Fragment {
             @Override
             public void onSuggestionClicked(final SearchSuggestion searchSuggestion) {
 
-                ColorSuggestion colorSuggestion = (ColorSuggestion) searchSuggestion;
-                DataHelper.findColors(getActivity(), colorSuggestion.getBody(),
-                        new DataHelper.OnFindColorsListener() {
+                RecipesSuggestion RecipesSuggestion = (RecipesSuggestion) searchSuggestion;
+                RecipesDataHelper.findColors(getActivity(), RecipesSuggestion.getBody(),
+                        new RecipesDataHelper.OnFindRecipesListener() {
 
                             @Override
                             public void onResults(List<ColorWrapper> results) {
@@ -141,8 +142,8 @@ public class SearchFragment extends Fragment {
             public void onSearchAction(String query) {
                 mLastQuery = query;
 
-                DataHelper.findColors(getActivity(), query,
-                        new DataHelper.OnFindColorsListener() {
+                RecipesDataHelper.findColors(getActivity(), query,
+                        new RecipesDataHelper.OnFindRecipesListener() {
 
                             @Override
                             public void onResults(List<ColorWrapper> results) {
@@ -159,7 +160,7 @@ public class SearchFragment extends Fragment {
             public void onFocus() {
 
                 //show suggestions when search bar gains focus (typically history suggestions)
-                mSearchView.swapSuggestions(DataHelper.getHistory(getActivity(), 3));
+                mSearchView.swapSuggestions(RecipesDataHelper.getHistory(getActivity(), 3));
 
                 Log.d(TAG, "onFocus()");
             }
@@ -232,12 +233,12 @@ public class SearchFragment extends Fragment {
             @Override
             public void onBindSuggestion(View suggestionView, ImageView leftIcon,
                                          TextView textView, SearchSuggestion item, int itemPosition) {
-                ColorSuggestion colorSuggestion = (ColorSuggestion) item;
+                RecipesSuggestion RecipesSuggestion = (RecipesSuggestion) item;
 
                 String textColor = mIsDarkSearchTheme ? "#ffffff" : "#000000";
                 String textLight = mIsDarkSearchTheme ? "#bfbfbf" : "#787878";
 
-                if (colorSuggestion.getIsHistory()) {
+                if (RecipesSuggestion.isHistory()) {
                     leftIcon.setImageDrawable(ResourcesCompat.getDrawable(getResources(),
                             R.drawable.ic_history_black_24dp, null));
 
@@ -249,7 +250,7 @@ public class SearchFragment extends Fragment {
                 }
 
                 textView.setTextColor(Color.parseColor(textColor));
-                String text = colorSuggestion.getBody()
+                String text = RecipesSuggestion.getBody()
                         .replaceFirst(mSearchView.getQuery(),
                                 "<font color=\"" + textLight + "\">" + mSearchView.getQuery() + "</font>");
                 textView.setText(Html.fromHtml(text));
@@ -282,7 +283,7 @@ public class SearchFragment extends Fragment {
     }
 
     private void setupResultsList() {
-        mSearchResultsAdapter = new SearchResultsListAdapter();
+        mSearchResultsAdapter = new RecipesSearchResultsAdapter();
         mSearchResultsList.setAdapter(mSearchResultsAdapter);
         mSearchResultsList.setLayoutManager(new LinearLayoutManager(getContext()));
     }
