@@ -1,7 +1,6 @@
 package me.esca.utils.searchViewUtils.adapter;
 
 import android.app.Activity;
-import android.graphics.Color;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,7 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import me.esca.R;
-import me.esca.utils.searchViewUtils.data.ColorWrapper;
+import me.esca.model.Recipe;
 
 /**
  * Created by Me on 19/07/2017.
@@ -23,12 +22,12 @@ import me.esca.utils.searchViewUtils.data.ColorWrapper;
 
 public class RecipesSearchResultsAdapter extends RecyclerView.Adapter<RecipesSearchResultsAdapter.ViewHolder>  {
 
-    private List<ColorWrapper> mDataSet = new ArrayList<>();
+    private List<Recipe> mDataSet = new ArrayList<>();
 
     private int mLastAnimatedItemPosition = -1;
 
     public interface OnItemClickListener{
-        void onClick(ColorWrapper colorWrapper);
+        void onClick(Recipe recipe);
     }
 
     private RecipesSearchResultsAdapter.OnItemClickListener mItemsOnClickListener;
@@ -46,7 +45,7 @@ public class RecipesSearchResultsAdapter extends RecyclerView.Adapter<RecipesSea
         }
     }
 
-    public void swapData(List<ColorWrapper> mNewDataSet) {
+    public void swapData(List<Recipe> mNewDataSet) {
         mDataSet = mNewDataSet;
         notifyDataSetChanged();
     }
@@ -65,13 +64,9 @@ public class RecipesSearchResultsAdapter extends RecyclerView.Adapter<RecipesSea
     @Override
     public void onBindViewHolder(RecipesSearchResultsAdapter.ViewHolder holder, final int position) {
 
-        ColorWrapper colorSuggestion = mDataSet.get(position);
-        holder.mColorName.setText(colorSuggestion.getName());
-        holder.mColorValue.setText(colorSuggestion.getHex());
-
-        int color = Color.parseColor(colorSuggestion.getHex());
-        holder.mColorName.setTextColor(color);
-        holder.mColorValue.setTextColor(color);
+        Recipe recipe = mDataSet.get(position);
+        holder.mColorName.setText(recipe.getTitle());
+        holder.mColorValue.setText(recipe.getInstructions());
 
         if(mLastAnimatedItemPosition < position){
             animateItem(holder.itemView);

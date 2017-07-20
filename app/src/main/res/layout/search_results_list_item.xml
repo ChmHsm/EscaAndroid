@@ -19,11 +19,15 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textStyle="bold"
-            android:textSize="18sp"
+            android:textSize="14sp"
+            android:textColor="@color/black"
             tools:text="color name" />
 
         <TextView
             android:id="@+id/color_value"
+            android:minLines="1"
+            android:maxLines="1"
+            android:ellipsize="end"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             tools:text="#000000" />
