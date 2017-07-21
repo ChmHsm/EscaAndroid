@@ -31,6 +31,7 @@ import me.esca.utils.searchViewUtils.data.RecipesDataHelper;
 import java.util.List;
 
 import me.esca.R;
+import me.esca.utils.searchViewUtils.data.SearchResultsEntity;
 
 /**
  * Created by Me on 18/06/2017.
@@ -123,7 +124,7 @@ public class SearchFragment extends Fragment {
                         new RecipesDataHelper.OnFindRecipesListener() {
 
                             @Override
-                            public void onResults(List<Recipe> results) {
+                            public void onResults(List<SearchResultsEntity> results) {
                                 mSearchResultsAdapter.swapData(results);
                             }
 
@@ -141,7 +142,7 @@ public class SearchFragment extends Fragment {
                         new RecipesDataHelper.OnFindRecipesListener() {
 
                             @Override
-                            public void onResults(List<Recipe> results) {
+                            public void onResults(List<SearchResultsEntity> results) {
                                 mSearchResultsAdapter.swapData(results);
                             }
 

@@ -15,6 +15,7 @@ import java.util.List;
 
 import me.esca.R;
 import me.esca.model.Recipe;
+import me.esca.utils.searchViewUtils.data.SearchResultsEntity;
 
 /**
  * Created by Me on 19/07/2017.
@@ -22,12 +23,12 @@ import me.esca.model.Recipe;
 
 public class RecipesSearchResultsAdapter extends RecyclerView.Adapter<RecipesSearchResultsAdapter.ViewHolder>  {
 
-    private List<Recipe> mDataSet = new ArrayList<>();
+    private List<SearchResultsEntity> mDataSet = new ArrayList<>();
 
     private int mLastAnimatedItemPosition = -1;
 
     public interface OnItemClickListener{
-        void onClick(Recipe recipe);
+        void onClick(SearchResultsEntity searchResultsEntity);
     }
 
     private RecipesSearchResultsAdapter.OnItemClickListener mItemsOnClickListener;
@@ -45,7 +46,7 @@ public class RecipesSearchResultsAdapter extends RecyclerView.Adapter<RecipesSea
         }
     }
 
-    public void swapData(List<Recipe> mNewDataSet) {
+    public void swapData(List<SearchResultsEntity> mNewDataSet) {
         mDataSet = mNewDataSet;
         notifyDataSetChanged();
     }
@@ -64,9 +65,9 @@ public class RecipesSearchResultsAdapter extends RecyclerView.Adapter<RecipesSea
     @Override
     public void onBindViewHolder(RecipesSearchResultsAdapter.ViewHolder holder, final int position) {
 
-        Recipe recipe = mDataSet.get(position);
-        holder.mColorName.setText(recipe.getTitle());
-        holder.mColorValue.setText(recipe.getInstructions());
+        SearchResultsEntity searchResultsEntity = mDataSet.get(position);
+        holder.mColorName.setText(searchResultsEntity.getHeaderContent());
+        holder.mColorValue.setText(searchResultsEntity.getDescriptionContent());
 
         if(mLastAnimatedItemPosition < position){
             animateItem(holder.itemView);

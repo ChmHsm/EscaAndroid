@@ -1,24 +1,14 @@
 package me.esca.utils.searchViewUtils.data;
 
 import android.content.Context;
-import android.content.CursorLoader;
 import android.database.Cursor;
-import android.net.Uri;
 import android.widget.Filter;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.lang.reflect.Type;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 import me.esca.dbRelated.contentProvider.RecipesContentProvider;
+import me.esca.dbRelated.cook.tableUtils.CooksTableDefinition;
 import me.esca.dbRelated.recipe.tableUtils.RecipesTableDefinition;
 import me.esca.model.Recipe;
 
@@ -34,7 +24,7 @@ public class RecipesDataHelper {
             new ArrayList<>();
 
     public interface OnFindRecipesListener {
-        void onResults(List<Recipe> results);
+        void onResults(List<SearchResultsEntity> results);
     }
 
     public interface OnFindSuggestionsListener {
@@ -73,16 +63,32 @@ public class RecipesDataHelper {
                 List<RecipesSuggestion> suggestionList = new ArrayList<>();
                 if (!(constraint == null || constraint.length() == 0)) {
 
-                    Cursor cursor = context.getContentResolver().query(
+                    Cursor recipesCursor = context.getContentResolver().query(
                             RecipesContentProvider.CONTENT_URI_RECIPES,
                             new String[]{RecipesTableDefinition.TITLE_COLUMN},
-                            RecipesTableDefinition.TITLE_COLUMN + " like " + "?" ,
-                            new String[]{"%"+constraint.toString()+"%"}, RecipesTableDefinition.TITLE_COLUMN);
-                    if(cursor != null){
-                        while(cursor.moveToNext()){
+                            RecipesTableDefinition.TITLE_COLUMN + " like " + "?",
+                            new String[]{"%" + constraint.toString() + "%"}, RecipesTableDefinition.TITLE_COLUMN);
+
+                    if (recipesCursor != null) {
+                        while (recipesCursor.moveToNext()) {
                             RecipesSuggestion recipesSuggestion =
-                                    new RecipesSuggestion(cursor.getString(
-                                            cursor.getColumnIndex(RecipesTableDefinition.TITLE_COLUMN)));
+                                    new RecipesSuggestion(recipesCursor.getString(
+                                            recipesCursor.getColumnIndex(RecipesTableDefinition.TITLE_COLUMN)));
+                            suggestionList.add(recipesSuggestion);
+                        }
+                    }
+
+                    Cursor cooksCursor = context.getContentResolver().query(
+                            RecipesContentProvider.CONTENT_URI_COOKS,
+                            new String[]{CooksTableDefinition.USERNAME_COLUMN},
+                            CooksTableDefinition.USERNAME_COLUMN + " like " + "?",
+                            new String[]{"%" + constraint.toString() + "%"}, CooksTableDefinition.USERNAME_COLUMN);
+
+                    if (cooksCursor != null) {
+                        while (cooksCursor.moveToNext()) {
+                            RecipesSuggestion recipesSuggestion =
+                                    new RecipesSuggestion(cooksCursor.getString(
+                                            cooksCursor.getColumnIndex(CooksTableDefinition.USERNAME_COLUMN)));
                             suggestionList.add(recipesSuggestion);
                         }
                     }
@@ -111,26 +117,61 @@ public class RecipesDataHelper {
         }.filter(query);
     }
 
-    public static void findColors(Context context, String query, final RecipesDataHelper.OnFindRecipesListener listener) {
+    public static void findColors(final Context context, String query, final RecipesDataHelper.OnFindRecipesListener listener) {
 
-        initColorWrapperList(context);
+//        initResultsList(context);
         new Filter() {
 
             @Override
             protected FilterResults performFiltering(CharSequence constraint) {
-                List<Recipe> recipeSuggestionList = new ArrayList<>();
+                List<SearchResultsEntity> searchSuggestionList = new ArrayList<>();
 
                 if (!(constraint == null || constraint.length() == 0)) {
-                    for (Recipe recipe : recipesList) {
-                        if (recipe.getTitle().toUpperCase()
-                                .contains(constraint.toString().toUpperCase())) {
-                            recipeSuggestionList.add(recipe);
+
+                    Cursor recipesCursor = context.getContentResolver().query(
+                            RecipesContentProvider.CONTENT_URI_RECIPES,
+                            new String[]{RecipesTableDefinition.ID_COLUMN, RecipesTableDefinition.TITLE_COLUMN,
+                                    RecipesTableDefinition.INSTRUCTIONS_COLUMN},
+                            RecipesTableDefinition.TITLE_COLUMN + " like " + "?",
+                            new String[]{"%" + constraint.toString() + "%"}, RecipesTableDefinition.TITLE_COLUMN);
+
+                    if (recipesCursor != null) {
+                        while (recipesCursor.moveToNext()) {
+                            SearchResultsEntity searchResultsEntity =
+                                    new SearchResultsEntity(recipesCursor.getLong(
+                                            recipesCursor.getColumnIndex(RecipesTableDefinition.TITLE_COLUMN)),
+                                            recipesCursor.getString(
+                                                    recipesCursor.getColumnIndex(RecipesTableDefinition.TITLE_COLUMN)),
+                                            recipesCursor.getString(
+                                                    recipesCursor.getColumnIndex(RecipesTableDefinition.INSTRUCTIONS_COLUMN)),
+                                            1);
+
+                            searchSuggestionList.add(searchResultsEntity);
+                        }
+                    }
+
+                    Cursor cooksCursor = context.getContentResolver().query(
+                            RecipesContentProvider.CONTENT_URI_COOKS,
+                            new String[]{CooksTableDefinition.ID_COLUMN, CooksTableDefinition.USERNAME_COLUMN},
+                            CooksTableDefinition.USERNAME_COLUMN + " like " + "?",
+                            new String[]{"%" + constraint.toString() + "%"}, CooksTableDefinition.USERNAME_COLUMN);
+
+                    if (cooksCursor != null) {
+                        while (cooksCursor.moveToNext()) {
+                            SearchResultsEntity searchResultsEntity =
+                                    new SearchResultsEntity(cooksCursor.getLong(
+                                            cooksCursor.getColumnIndex(CooksTableDefinition.ID_COLUMN)),
+                                            cooksCursor.getString(
+                                                    cooksCursor.getColumnIndex(CooksTableDefinition.USERNAME_COLUMN)),
+                                            null,
+                                            2);
+                            searchSuggestionList.add(searchResultsEntity);
                         }
                     }
                 }
                 FilterResults results = new FilterResults();
-                results.values = recipeSuggestionList;
-                results.count = recipeSuggestionList.size();
+                results.values = searchSuggestionList;
+                results.count = searchSuggestionList.size();
                 return results;
             }
 
@@ -138,20 +179,20 @@ public class RecipesDataHelper {
             protected void publishResults(CharSequence constraint, FilterResults results) {
 
                 if (listener != null) {
-                    listener.onResults((List<Recipe>) results.values);
+                    listener.onResults((List<SearchResultsEntity>) results.values);
                 }
             }
         }.filter(query);
 
     }
 
-    private static void initColorWrapperList(Context context) {
+    private static void initResultsList(Context context) {
         recipesList.clear();
 
         Cursor cursor = context.getContentResolver().query(RecipesContentProvider.CONTENT_URI_RECIPES,
                 null, null, null, RecipesTableDefinition.TITLE_COLUMN);
-        if(cursor != null){
-            while(cursor.moveToNext()){
+        if (cursor != null) {
+            while (cursor.moveToNext()) {
                 Recipe recipe = new Recipe(
                         cursor.getLong(
                                 cursor.getColumnIndex(RecipesTableDefinition.ID_COLUMN)),
