@@ -15,3 +15,9 @@ Look-up | User profile
 ------------ | -------------
 <img src="https://user-images.githubusercontent.com/12183061/28490790-eab0ce60-6ee2-11e7-9a66-20c8b0e58e37.png"/> | <img src="https://user-images.githubusercontent.com/12183061/27520262-66ba4e20-59f6-11e7-853c-6f59f56af808.png"/>
 
+### Esca is built with :green_heart: and:
+  - Java 8
+  - Spring Boot (back-end of course) 1.5, back-end project is here on [github](https://github.com/ChmHsm/RecipesWS) aswell.
+  - Native Android SDK 25
+  - Heroku
+  - AWS
