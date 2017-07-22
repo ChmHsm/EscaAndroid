@@ -8,28 +8,46 @@
     app:cardCornerRadius="0dp">
 
     <LinearLayout
-        android:id="@+id/text_container"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:padding="8dp">
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
 
-        <TextView
-            android:id="@+id/color_name"
+        <ImageView
+            android:id="@+id/searchResultImage"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:scaleType="fitXY"
+            android:layout_gravity="center"
+            android:src="@drawable/profile_photo_cook"
+            android:padding="4dp"/>
+
+        <LinearLayout
+            android:id="@+id/text_container"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textStyle="bold"
-            android:textSize="14sp"
-            android:textColor="@color/black"
-            tools:text="color name" />
+            android:orientation="vertical"
+            android:padding="8dp">
 
-        <TextView
-            android:id="@+id/color_value"
-            android:minLines="1"
-            android:maxLines="1"
-            android:ellipsize="end"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            tools:text="#000000" />
+            <TextView
+                android:id="@+id/color_name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textStyle="bold"
+                android:textSize="14sp"
+                android:textColor="@color/black"
+                tools:text="color name" />
+
+            <TextView
+                android:id="@+id/color_value"
+                android:minLines="1"
+                android:maxLines="1"
+                android:ellipsize="end"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                tools:text="#000000" />
+        </LinearLayout>
+
     </LinearLayout>
+
+
 </android.support.v7.widget.CardView>

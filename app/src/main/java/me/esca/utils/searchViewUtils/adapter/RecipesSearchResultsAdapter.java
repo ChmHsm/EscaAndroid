@@ -1,11 +1,14 @@
 package me.esca.utils.searchViewUtils.adapter;
 
 import android.app.Activity;
+import android.content.Context;
+import android.content.res.Resources;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.DecelerateInterpolator;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.arlib.floatingsearchview.util.Util;
@@ -24,7 +27,7 @@ import me.esca.utils.searchViewUtils.data.SearchResultsEntity;
 public class RecipesSearchResultsAdapter extends RecyclerView.Adapter<RecipesSearchResultsAdapter.ViewHolder>  {
 
     private List<SearchResultsEntity> mDataSet = new ArrayList<>();
-
+    private Context viewContext;
     private int mLastAnimatedItemPosition = -1;
 
     public interface OnItemClickListener{
@@ -37,12 +40,14 @@ public class RecipesSearchResultsAdapter extends RecyclerView.Adapter<RecipesSea
         public final TextView mColorName;
         public final TextView mColorValue;
         public final View mTextContainer;
+        public final ImageView searchResultImage;
 
         public ViewHolder(View view) {
             super(view);
             mColorName = (TextView) view.findViewById(R.id.color_name);
             mColorValue = (TextView) view.findViewById(R.id.color_value);
             mTextContainer = view.findViewById(R.id.text_container);
+            searchResultImage = (ImageView) view.findViewById(R.id.searchResultImage);
         }
     }
 
@@ -59,6 +64,7 @@ public class RecipesSearchResultsAdapter extends RecyclerView.Adapter<RecipesSea
     public RecipesSearchResultsAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.search_results_list_item, parent, false);
+        viewContext = parent.getContext();
         return new RecipesSearchResultsAdapter.ViewHolder(view);
     }
 
@@ -68,6 +74,15 @@ public class RecipesSearchResultsAdapter extends RecyclerView.Adapter<RecipesSea
         SearchResultsEntity searchResultsEntity = mDataSet.get(position);
         holder.mColorName.setText(searchResultsEntity.getHeaderContent());
         holder.mColorValue.setText(searchResultsEntity.getDescriptionContent());
+
+        if(searchResultsEntity.getEntityType() == 1){
+            holder.mColorName.setTextColor(viewContext.getResources().getColor(R.color.colorAccent, null));
+            holder.searchResultImage.setImageResource(R.drawable.icon_cooking);
+        }
+        else if(searchResultsEntity.getEntityType() == 2){
+            holder.mColorName.setTextColor(viewContext.getResources().getColor(R.color.black, null));
+            holder.searchResultImage.setImageResource(R.drawable.profile_photo_cook);
+        }
 
         if(mLastAnimatedItemPosition < position){
             animateItem(holder.itemView);
