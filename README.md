@@ -12,3 +12,9 @@ Work so far:<br/>
 
 <b>Profile</b><br/>
 <img src="https://user-images.githubusercontent.com/12183061/27520262-66ba4e20-59f6-11e7-853c-6f59f56af808.png"/>
+
+
+First Header | Second Header
+------------ | -------------
+Content from cell 1 | Content from cell 2
+Content in the first column | Content in the second column
