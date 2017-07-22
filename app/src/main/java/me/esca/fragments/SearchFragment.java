@@ -1,6 +1,8 @@
 package me.esca.fragments;
 
 import android.app.Fragment;
+import android.content.Intent;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
@@ -23,6 +25,10 @@ import com.arlib.floatingsearchview.suggestions.SearchSuggestionsAdapter;
 import com.arlib.floatingsearchview.suggestions.model.SearchSuggestion;
 import com.arlib.floatingsearchview.util.Util;
 
+import me.esca.activities.RecipeDetailsActivity;
+import me.esca.dbRelated.contentProvider.RecipesContentProvider;
+import me.esca.dbRelated.image.tableUtils.ImagesTableDefinition;
+import me.esca.dbRelated.recipe.tableUtils.RecipesTableDefinition;
 import me.esca.model.Recipe;
 import me.esca.utils.searchViewUtils.adapter.RecipesSearchResultsAdapter;
 import me.esca.utils.searchViewUtils.data.RecipesSuggestion;
@@ -282,6 +288,33 @@ public class SearchFragment extends Fragment {
         mSearchResultsAdapter = new RecipesSearchResultsAdapter();
         mSearchResultsList.setAdapter(mSearchResultsAdapter);
         mSearchResultsList.setLayoutManager(new LinearLayoutManager(getContext()));
+        mSearchResultsAdapter.setItemsOnClickListener(new RecipesSearchResultsAdapter.OnItemClickListener() {
+            @Override
+            public void onClick(SearchResultsEntity searchResultsEntity) {
+                if(searchResultsEntity.getEntityType() == 1){
+                    if(searchResultsEntity.getId() > 0){
+                        Cursor cursor = getActivity().getContentResolver().query(RecipesContentProvider.CONTENT_URI_IMAGES,
+                                new String[]{ImagesTableDefinition.ID_COLUMN, ImagesTableDefinition.EXTENSION_COLUMN},
+                                ImagesTableDefinition.RECIPE_ID_COLUMN + " = ?",
+                                new String[] {String.valueOf(searchResultsEntity.getId())}, null);
+                        if(cursor != null && cursor.getCount() > 0){
+                            cursor.moveToNext();
+                            Intent intent = new Intent(getActivity(), RecipeDetailsActivity.class);
+                            intent.putExtra("recipeId", searchResultsEntity.getId());
+                            intent.putExtra("imageId", cursor.getLong(
+                                    cursor.getColumnIndex(ImagesTableDefinition.ID_COLUMN)));
+                            intent.putExtra("imageExtension", cursor.getLong(
+                                    cursor.getColumnIndex(ImagesTableDefinition.EXTENSION_COLUMN)));
+                            startActivity(intent);
+                        }
+                    }
+
+                }
+                else if(searchResultsEntity.getEntityType() == 2){
+                    //TODO start the profile Activity
+                }
+            }
+        });
     }
 
 

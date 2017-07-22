@@ -13,34 +13,21 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.engine.DiskCacheStrategy;
-import com.bumptech.glide.load.resource.drawable.DrawableResource;
-
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
-
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Locale;
 
 import me.esca.R;
 import me.esca.activities.RecipeDetailsActivity;
 import me.esca.dbRelated.contentProvider.RecipesContentProvider;
 import me.esca.dbRelated.cook.tableUtils.CooksTableDefinition;
 import me.esca.dbRelated.recipe.tableUtils.RecipesTableDefinition;
-import me.esca.model.Cook;
 import me.esca.model.Image;
-import me.esca.model.Recipe;
 import me.esca.utils.CursorRecyclerViewAdapter;
 import me.esca.utils.DateFormatting;
 import me.esca.utils.glide.GlideApp;
 
-import static me.esca.services.escaWS.Utils.ALL_RECIPES_URL;
 import static me.esca.services.escaWS.Utils.GET_IMAGE_URL;
 import static me.esca.services.escaWS.Utils.MAIN_DOMAIN_NAME;
 

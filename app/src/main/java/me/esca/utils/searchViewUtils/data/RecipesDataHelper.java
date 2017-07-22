@@ -139,7 +139,7 @@ public class RecipesDataHelper {
                         while (recipesCursor.moveToNext()) {
                             SearchResultsEntity searchResultsEntity =
                                     new SearchResultsEntity(recipesCursor.getLong(
-                                            recipesCursor.getColumnIndex(RecipesTableDefinition.TITLE_COLUMN)),
+                                            recipesCursor.getColumnIndex(RecipesTableDefinition.ID_COLUMN)),
                                             recipesCursor.getString(
                                                     recipesCursor.getColumnIndex(RecipesTableDefinition.TITLE_COLUMN)),
                                             recipesCursor.getString(

@@ -6,7 +6,6 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
 import me.esca.dbRelated.cook.tableUtils.CooksTableDefinition;
-import me.esca.dbRelated.image.tableUtils.ImagesTableDefinition;
 import me.esca.dbRelated.recipe.tableUtils.RecipesTableDefinition;
 
 /**
@@ -26,14 +25,14 @@ public class RecipesDatabaseHelper extends SQLiteOpenHelper{
     @Override
     public void onCreate(SQLiteDatabase db) {
         RecipesTableDefinition.onCreate(db);
-        ImagesTableDefinition.onCreate(db);
+        me.esca.dbRelated.image.tableUtils.ImagesTableDefinition.onCreate(db);
         CooksTableDefinition.onCreate(db);
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         RecipesTableDefinition.onUpgrade(db, oldVersion, newVersion);
-        ImagesTableDefinition.onUpgrade(db, oldVersion, newVersion);
+        me.esca.dbRelated.image.tableUtils.ImagesTableDefinition.onUpgrade(db, oldVersion, newVersion);
         CooksTableDefinition.onUpgrade(db, oldVersion, newVersion);
     }
 

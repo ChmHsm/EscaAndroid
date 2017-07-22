@@ -15,12 +15,13 @@ import android.text.TextUtils;
 import android.util.Log;
 
 import java.security.InvalidKeyException;
-import java.util.List;
 
 import me.esca.dbRelated.cook.tableUtils.CooksTableDefinition;
-import me.esca.dbRelated.image.tableUtils.ImagesTableDefinition;
 import me.esca.dbRelated.RecipesDatabaseHelper;
+import me.esca.dbRelated.image.tableUtils.ImagesTableDefinition;
 import me.esca.dbRelated.recipe.tableUtils.RecipesTableDefinition;
+import me.esca.model.Cook;
+import me.esca.model.Image;
 import me.esca.model.Recipe;
 
 /**
@@ -90,7 +91,7 @@ public class RecipesContentProvider extends ContentProvider {
                 queryBuilder.setTables(CooksTableDefinition.TABLE_NAME);
                 break;
             case IMAGES:
-                queryBuilder.setTables(ImagesTableDefinition.TABLE_NAME);
+                queryBuilder.setTables(me.esca.dbRelated.image.tableUtils.ImagesTableDefinition.TABLE_NAME);
                 break;
             case RECIPE_ID:
                 queryBuilder.setTables(RecipesTableDefinition.TABLE_NAME);
@@ -101,8 +102,8 @@ public class RecipesContentProvider extends ContentProvider {
                 queryBuilder.appendWhere(CooksTableDefinition.ID_COLUMN + "=" + uri.getLastPathSegment());
                 break;
             case IMAGE_ID:
-                queryBuilder.setTables(ImagesTableDefinition.TABLE_NAME);
-                queryBuilder.appendWhere(ImagesTableDefinition.ID_COLUMN + "=" + uri.getLastPathSegment());
+                queryBuilder.setTables(me.esca.dbRelated.image.tableUtils.ImagesTableDefinition.TABLE_NAME);
+                queryBuilder.appendWhere(me.esca.dbRelated.image.tableUtils.ImagesTableDefinition.ID_COLUMN + "=" + uri.getLastPathSegment());
                 break;
             default:
                 throw new IllegalArgumentException("Unknown URI: " + uri);
@@ -135,7 +136,7 @@ public class RecipesContentProvider extends ContentProvider {
                 id = sqlDB.insert(CooksTableDefinition.TABLE_NAME, null, values);
                 break;
             case IMAGES:
-                id = sqlDB.insert(ImagesTableDefinition.TABLE_NAME, null, values);
+                id = sqlDB.insert(me.esca.dbRelated.image.tableUtils.ImagesTableDefinition.TABLE_NAME, null, values);
                 break;
             default:
                 throw new IllegalArgumentException("Unknown URI: " + uri);
@@ -165,7 +166,7 @@ public class RecipesContentProvider extends ContentProvider {
                             id = sqlDB.insert(CooksTableDefinition.TABLE_NAME, null, value);
                             break;
                         case IMAGES:
-                            id = sqlDB.insert(ImagesTableDefinition.TABLE_NAME, null, value);
+                            id = sqlDB.insert(me.esca.dbRelated.image.tableUtils.ImagesTableDefinition.TABLE_NAME, null, value);
                             break;
                         default:
                             throw new IllegalArgumentException("Unknown URI: " + uri);
@@ -204,7 +205,7 @@ public class RecipesContentProvider extends ContentProvider {
                         selectionArgs);
                 break;
             case IMAGES:
-                rowsDeleted = sqlDB.delete(ImagesTableDefinition.TABLE_NAME, selection,
+                rowsDeleted = sqlDB.delete(me.esca.dbRelated.image.tableUtils.ImagesTableDefinition.TABLE_NAME, selection,
                         selectionArgs);
                 break;
             //TODO **********Could be optimized************
@@ -242,13 +243,13 @@ public class RecipesContentProvider extends ContentProvider {
                 id = uri.getLastPathSegment();
                 if (TextUtils.isEmpty(selection)) {
                     rowsDeleted = sqlDB.delete(
-                            ImagesTableDefinition.TABLE_NAME,
-                            ImagesTableDefinition.ID_COLUMN + "=" + id,
+                            me.esca.dbRelated.image.tableUtils.ImagesTableDefinition.TABLE_NAME,
+                            me.esca.dbRelated.image.tableUtils.ImagesTableDefinition.ID_COLUMN + "=" + id,
                             null);
                 } else {
                     rowsDeleted = sqlDB.delete(
-                            ImagesTableDefinition.TABLE_NAME,
-                            ImagesTableDefinition.ID_COLUMN + "=" + id
+                            me.esca.dbRelated.image.tableUtils.ImagesTableDefinition.TABLE_NAME,
+                            me.esca.dbRelated.image.tableUtils.ImagesTableDefinition.ID_COLUMN + "=" + id
                                     + " and " + selection,
                             selectionArgs);
                 }
@@ -282,7 +283,7 @@ public class RecipesContentProvider extends ContentProvider {
                         selectionArgs);
                 break;
             case IMAGES:
-                rowsUpdated = sqlDB.update(ImagesTableDefinition.TABLE_NAME,
+                rowsUpdated = sqlDB.update(me.esca.dbRelated.image.tableUtils.ImagesTableDefinition.TABLE_NAME,
                         values,
                         selection,
                         selectionArgs);
@@ -322,14 +323,14 @@ public class RecipesContentProvider extends ContentProvider {
             case IMAGE_ID:
                 id = uri.getLastPathSegment();
                 if (TextUtils.isEmpty(selection)) {
-                    rowsUpdated = sqlDB.update(ImagesTableDefinition.TABLE_NAME,
+                    rowsUpdated = sqlDB.update(me.esca.dbRelated.image.tableUtils.ImagesTableDefinition.TABLE_NAME,
                             values,
-                            ImagesTableDefinition.ID_COLUMN + "=" + id,
+                            me.esca.dbRelated.image.tableUtils.ImagesTableDefinition.ID_COLUMN + "=" + id,
                             null);
                 } else {
-                    rowsUpdated = sqlDB.update(ImagesTableDefinition.TABLE_NAME,
+                    rowsUpdated = sqlDB.update(me.esca.dbRelated.image.tableUtils.ImagesTableDefinition.TABLE_NAME,
                             values,
-                            ImagesTableDefinition.ID_COLUMN + "=" + id
+                            me.esca.dbRelated.image.tableUtils.ImagesTableDefinition.ID_COLUMN + "=" + id
                                     + " and "
                                     + selection,
                             selectionArgs);
@@ -360,105 +361,147 @@ public class RecipesContentProvider extends ContentProvider {
     @Nullable
     @Override
     public Bundle call(@NonNull String method, @Nullable String arg, @Nullable Bundle extras) {
-        if (method.equals("saveOrUpdateRecipe")) {
-            if (extras != null) {
-                Recipe recipe = (Recipe) extras.getSerializable("recipe");
-                if (recipe != null) {
-                    ContentValues contentValues = new ContentValues();
-                    contentValues.put(RecipesTableDefinition.ID_COLUMN, recipe.getId());
-                    contentValues.put(RecipesTableDefinition.TITLE_COLUMN, recipe.getTitle());
-                    contentValues.put(RecipesTableDefinition.DIFFICULTY_RATING_COLUMN, recipe.getDifficultyRating());
-                    contentValues.put(RecipesTableDefinition.PREP_TIME_COLUMN, recipe.getPrepTime());
-                    contentValues.put(RecipesTableDefinition.PREP_COST_COLUMN, recipe.getPrepCost());
-                    contentValues.put(RecipesTableDefinition.INGREDIENTS_COLUMN, recipe.getIngredients());
-                    contentValues.put(RecipesTableDefinition.INSTRUCTIONS_COLUMN, recipe.getInstructions());
-                    contentValues.put(RecipesTableDefinition.DATE_CREATED_COLUMN, recipe.getDateCreated());
-                    contentValues.put(RecipesTableDefinition.COOK_COLUMN, recipe.getCook().getId());
-                    try {
-                        saveOrUpdate(contentValues);
-                    } catch (InvalidKeyException e) {
-                        e.printStackTrace();
+
+        if (extras != null) {
+            if(extras.getString("uri") != null){
+                Uri uri = Uri.parse(extras.getString("uri"));
+                if (method.equals("saveOrUpdateRecipe")) {
+
+                    Recipe recipe = (Recipe) extras.getSerializable("recipe");
+                    if (recipe != null) {
+                        ContentValues contentValues = new ContentValues();
+                        contentValues.put(RecipesTableDefinition.ID_COLUMN, recipe.getId());
+                        contentValues.put(RecipesTableDefinition.TITLE_COLUMN, recipe.getTitle());
+                        contentValues.put(RecipesTableDefinition.DIFFICULTY_RATING_COLUMN, recipe.getDifficultyRating());
+                        contentValues.put(RecipesTableDefinition.PREP_TIME_COLUMN, recipe.getPrepTime());
+                        contentValues.put(RecipesTableDefinition.PREP_COST_COLUMN, recipe.getPrepCost());
+                        contentValues.put(RecipesTableDefinition.INGREDIENTS_COLUMN, recipe.getIngredients());
+                        contentValues.put(RecipesTableDefinition.INSTRUCTIONS_COLUMN, recipe.getInstructions());
+                        contentValues.put(RecipesTableDefinition.DATE_CREATED_COLUMN, recipe.getDateCreated());
+                        contentValues.put(RecipesTableDefinition.COOK_COLUMN, recipe.getCook().getId());
+                        try {
+                            saveOrUpdate(contentValues, uri);
+                        } catch (InvalidKeyException e) {
+                            e.printStackTrace();
+                        }
                     }
                 }
-            }
-        }
 
-        if (method.equals("bulkSaveOrUpdateRecipe")) {
-            if (extras != null) {
-                ContentValues[] recipes = (ContentValues[]) extras.getSerializable("recipes");
-//                if (recipes != null && recipes.size() > 0) {
-//                    ContentValues[] allRecipes = new ContentValues[recipes.size()];
-//                    for (int i = 0; i < recipes.size(); i++) {
-//                        ContentValues contentValues = new ContentValues();
-//                        contentValues.put(RecipesTableDefinition.ID_COLUMN, recipes.get(i).getId());
-//                        contentValues.put(RecipesTableDefinition.TITLE_COLUMN, recipes.get(i).getTitle());
-//                        contentValues.put(RecipesTableDefinition.DIFFICULTY_RATING_COLUMN, recipes.get(i).getDifficultyRating());
-//                        contentValues.put(RecipesTableDefinition.PREP_TIME_COLUMN, recipes.get(i).getPrepTime());
-//                        contentValues.put(RecipesTableDefinition.PREP_COST_COLUMN, recipes.get(i).getPrepCost());
-//                        contentValues.put(RecipesTableDefinition.INGREDIENTS_COLUMN, recipes.get(i).getIngredients());
-//                        contentValues.put(RecipesTableDefinition.INSTRUCTIONS_COLUMN, recipes.get(i).getInstructions());
-//                        contentValues.put(RecipesTableDefinition.DATE_CREATED_COLUMN, recipes.get(i).getDateCreated());
-//                        contentValues.put(RecipesTableDefinition.COOK_COLUMN, recipes.get(i).getCook().getId());
-//                        allRecipes[i] = contentValues;
-//                    }
-                    if(recipes != null) bulkSaveOrUpdate(recipes);
+                if (method.equals("saveOrUpdateCook")) {
 
+                    Cook cook = (Cook) extras.getSerializable("cook");
+                    if (cook != null) {
+                        ContentValues cookEntityValues = new ContentValues();
+                        cookEntityValues.put(CooksTableDefinition.ID_COLUMN, cook.getId());
+                        cookEntityValues.put(CooksTableDefinition.USERNAME_COLUMN, cook.getUsername());
+                        cookEntityValues.put(CooksTableDefinition.DATE_CREATED_COLUMN, cook.getDateCreated());
+
+                        try {
+                            saveOrUpdate(cookEntityValues, uri);
+                        } catch (InvalidKeyException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+
+                if (method.equals("saveOrUpdateImage")) {
+                    Image image = (Image) extras.getSerializable("image");
+                    if (image != null) {
+                        ContentValues imageEntityValues = new ContentValues();
+                        imageEntityValues.put(ImagesTableDefinition.ID_COLUMN, image.getId());
+                        imageEntityValues.put(ImagesTableDefinition.DATE_CREATED_COLUMN, image.getDateCreated());
+                        imageEntityValues.put(ImagesTableDefinition.EXTENSION_COLUMN, image.getExtension());
+                        try {
+                            saveOrUpdate(imageEntityValues, uri);
+                        } catch (InvalidKeyException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+
+                if (method.equals("bulkSaveOrUpdateRecipe")) {
+
+                    ContentValues[] recipes = (ContentValues[]) extras.getSerializable("recipes");
+                    if (recipes != null) bulkSaveOrUpdate(recipes, uri);
                 }
             }
+            else{
+                //TODO throw an exception for missing Uri
+            }
+
+        }
         return null;
     }
 
-    public Uri saveOrUpdate(@NonNull ContentValues values) throws InvalidKeyException {
+    public Uri saveOrUpdate(@NonNull ContentValues values, Uri uri) throws InvalidKeyException {
+        int uriType = sURIMatcher.match(uri);
+        String idColumn = "";
+        String baseUri = "";
+        switch (uriType) {
+            case RECIPES:
+                idColumn = RecipesTableDefinition.ID_COLUMN;
+                baseUri = BASE_PATH_RECIPES;
+                break;
+            case COOKS:
+                idColumn = CooksTableDefinition.ID_COLUMN;
+                baseUri = BASE_PATH_COOKS;
+                break;
+            case IMAGES:
+                idColumn = me.esca.dbRelated.image.tableUtils.ImagesTableDefinition.ID_COLUMN;
+                baseUri = BASE_PATH_IMAGES;
+                break;
+        }
 
-        if (!values.containsKey(RecipesTableDefinition.ID_COLUMN))
+        if (!values.containsKey(idColumn))
             throw new NullPointerException("id attribute not found while" +
                     " attempting saveOrUpdate on recipes table: the saveOrUpdate method's ContentValues " +
                     "parameter should contain an \"id\" attribute.");
 
-        long id = (Long) values.get(RecipesTableDefinition.ID_COLUMN);
+        long id = (Long) values.get(idColumn);
+
+        //CONTENT_URI_RECIPES = uri;
 
         if (id <= 0) {
-            //recipes table does not contain negative or 0 as id
-            return insert(Uri.parse(CONTENT_ITEM_TYPE_RECIPES), values);
+            return insert(uri, values);
         } else {
-            Cursor cursor = query(Uri.parse(CONTENT_URI_RECIPES + "/" + id), new String[]
-                    {RecipesTableDefinition.ID_COLUMN}, null, null, null);
+            Cursor cursor = query(Uri.parse(uri + "/" + id), new String[]
+                    {idColumn}, null, null, null);
             if (cursor != null && cursor.getCount() > 0) {
-                update(Uri.parse(CONTENT_URI_RECIPES + "/" + id), values, null, null);
+                update(Uri.parse(uri + "/" + id), values, null, null);
                 cursor.close();
-                return Uri.parse(BASE_PATH_RECIPES + "/" + id);
+
+                return Uri.parse(baseUri + "/" + id);
             } else {
                 if (cursor != null) cursor.close();
-                return insert(Uri.parse(CONTENT_ITEM_TYPE_RECIPES), values);
+                return insert(uri, values);
             }
-
         }
     }
 
-    public int bulkSaveOrUpdate(@NonNull ContentValues[] values) {
+    public int bulkSaveOrUpdate(@NonNull ContentValues[] values, @NonNull Uri uri) {
 
-        int insertCount = 0;
-        try {
-            SQLiteDatabase sqlDB = database.getWritableDatabase();
-
+            int insertCount = 0;
             try {
-                sqlDB.beginTransaction();
-                for (ContentValues value : values) {
-                    Uri uri1 = saveOrUpdate(value);
-                    Long id = Long.parseLong(uri1.getLastPathSegment());
-                    if (id > 0) insertCount++;
+                SQLiteDatabase sqlDB = database.getWritableDatabase();
+
+                try {
+                    sqlDB.beginTransaction();
+                    for (ContentValues value : values) {
+                        Uri uri1 = saveOrUpdate(value, uri);
+                        Long id = Long.parseLong(uri1.getLastPathSegment());
+                        if (id > 0) insertCount++;
+                    }
+                    sqlDB.setTransactionSuccessful();
+                } catch (Exception e) {
+                    Log.e("RECIPES: ", "Could not perform batch insertion transaction query on " +
+                            "table recipes. Exception message:" + e.getMessage());
+                } finally {
+                    sqlDB.endTransaction();
                 }
-                sqlDB.setTransactionSuccessful();
             } catch (Exception e) {
                 Log.e("RECIPES: ", "Could not perform batch insertion transaction query on " +
                         "table recipes. Exception message:" + e.getMessage());
-            } finally {
-                sqlDB.endTransaction();
             }
-        } catch (Exception e) {
-            Log.e("RECIPES: ", "Could not perform batch insertion transaction query on " +
-                    "table recipes. Exception message:" + e.getMessage());
+            return insertCount;
         }
-        return insertCount;
-    }
 }

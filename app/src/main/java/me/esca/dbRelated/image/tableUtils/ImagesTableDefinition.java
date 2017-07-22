@@ -19,6 +19,7 @@ public class ImagesTableDefinition {
     public static final String DATE_CREATED_COLUMN = "dateCreated";
     public static final String LAST_UPDATED_COLUMN = "lastUpdated";
     public static final String IS_MAIN_PICTURE_COLUMN = "isMainPicture";
+    public static final String EXTENSION_COLUMN = "extension";
     public static final String COOK_ID_COLUMN = "cookId";
     public static final String RECIPE_ID_COLUMN = "recipeId";
 
@@ -31,6 +32,7 @@ public class ImagesTableDefinition {
             + DATE_CREATED_COLUMN + " text, "
             + LAST_UPDATED_COLUMN + " text, "
             + IS_MAIN_PICTURE_COLUMN + " numeric, "
+            + EXTENSION_COLUMN + " integer, "
             + COOK_ID_COLUMN + " integer references cook on delete Cascade, "
             + RECIPE_ID_COLUMN + " integer references recipe on delete cascade "
             + ");";
