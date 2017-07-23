@@ -95,7 +95,6 @@ public class RetrieveAllRecipes extends IntentService {
             bundle.putString("uri", RecipesContentProvider.CONTENT_URI_COOKS.toString());
             getContentResolver().call(RecipesContentProvider.CONTENT_URI_COOKS, "saveOrUpdateCook", null, bundle);
 
-            //TODO retrieve images from WS and call saveOrUpdate on them as above
         }
 
 

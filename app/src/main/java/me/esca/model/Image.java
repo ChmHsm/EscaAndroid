@@ -37,7 +37,7 @@ public class Image implements Serializable {
         this.extension = extension;
     }
 
-    public Image(Long id, String originalName, String originalPath, String dateCreated, String lastUpdated, boolean isMainPicture, Cook cook, Recipe recipe) {
+    public Image(Long id, String originalName, String originalPath, String dateCreated, String lastUpdated, boolean isMainPicture, Cook cook, Recipe recipe, String extension) {
         this.id = id;
         this.originalName = originalName;
         this.originalPath = originalPath;
@@ -46,6 +46,7 @@ public class Image implements Serializable {
         this.isMainPicture = isMainPicture;
         this.cook = cook;
         this.recipe = recipe;
+        this.extension = extension;
     }
 
     public Image(String originalName, String originalPath, boolean isMainPicture, Recipe recipe) {

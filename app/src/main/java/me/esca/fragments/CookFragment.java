@@ -135,8 +135,13 @@ public class CookFragment extends Fragment implements ServiceConnection {
                             Double.valueOf(recipePreparationCostEditText.getText().toString().trim()),
                             recipeIngredientsEditText.getText().toString().trim(),
                             recipeInstructionsEditText.getText().toString().trim(), null, null, null, null);
-                    imageToBeAdded = new Image(null, imageUri.getPath(), imageUri.getPath(),
-                            null, null, true, null, recipeToBeAdded);
+                    imageToBeAdded = new Image(null,
+                            imageUri.getPath()
+                            .substring(0, imageUri.getPath().length() - imageUri.getPath().indexOf(".") -1),
+                            imageUri.getPath()
+                                    .substring(0, imageUri.getPath().length() - imageUri.getPath().indexOf(".") -1),
+                            null, null, true, null, recipeToBeAdded, imageUri.getPath()
+                            .substring(imageUri.getPath().lastIndexOf(".")));
                     addNewRecipeService = new AddNewRecipeService();
                     Intent service = new Intent(getActivity().getApplicationContext(), AddNewRecipeService.class);
                     service.putExtra("recipeToBeAdded", recipeToBeAdded);
