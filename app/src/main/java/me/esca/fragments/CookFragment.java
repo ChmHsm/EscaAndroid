@@ -40,6 +40,7 @@ import me.esca.R;
 import me.esca.model.Image;
 import me.esca.model.Recipe;
 import me.esca.services.escaWS.recipes.AddNewRecipeService;
+import me.esca.utils.ImageProcessing.Utils;
 
 import static android.app.Activity.RESULT_OK;
 
@@ -135,13 +136,13 @@ public class CookFragment extends Fragment implements ServiceConnection {
                             Double.valueOf(recipePreparationCostEditText.getText().toString().trim()),
                             recipeIngredientsEditText.getText().toString().trim(),
                             recipeInstructionsEditText.getText().toString().trim(), null, null, null, null);
+                    String realImagePath = Utils.getPathFromUri(getActivity(), imageUri);
+                    String imageExtension = realImagePath.substring(realImagePath.lastIndexOf("."));
                     imageToBeAdded = new Image(null,
                             imageUri.getPath()
                             .substring(0, imageUri.getPath().length() - imageUri.getPath().indexOf(".") -1),
-                            imageUri.getPath()
-                                    .substring(0, imageUri.getPath().length() - imageUri.getPath().indexOf(".") -1),
-                            null, null, true, null, recipeToBeAdded, imageUri.getPath()
-                            .substring(imageUri.getPath().lastIndexOf(".")));
+                            imageUri.getPath(),
+                            null, null, true, null, recipeToBeAdded, imageExtension);
                     addNewRecipeService = new AddNewRecipeService();
                     Intent service = new Intent(getActivity().getApplicationContext(), AddNewRecipeService.class);
                     service.putExtra("recipeToBeAdded", recipeToBeAdded);

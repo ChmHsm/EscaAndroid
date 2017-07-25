@@ -2,6 +2,7 @@ package me.esca.services.escaWS.recipes;
 
 import android.app.Service;
 import android.content.ContentUris;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
@@ -41,9 +42,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import me.esca.dbRelated.contentProvider.RecipesContentProvider;
+import me.esca.dbRelated.image.tableUtils.ImagesTableDefinition;
 import me.esca.model.Image;
 import me.esca.model.Recipe;
 import me.esca.utils.Accessors;
+import me.esca.utils.ImageProcessing.Utils;
 import me.esca.utils.security.cryptography.Encryption;
 
 import static me.esca.services.escaWS.Utils.ADD_IMAGE_URL;
@@ -119,10 +123,23 @@ public class AddNewRecipeService extends Service {
                     loggedUsername), recipeToBeAdded, Recipe.class);
 
             Long id = Long.parseLong(resultLocation.getPath().substring(resultLocation.getPath().lastIndexOf("/") + 1));
-            String imagePath = getPath(getApplicationContext(), imageUri);
+            String imagePath = Utils.getPathFromUri(getApplicationContext(), imageUri);
             imageToBeAdded.setExtension(imagePath.substring(imagePath.lastIndexOf(".")));
             imageResponse = restTemplate.postForObject(MAIN_DOMAIN_NAME+ADD_IMAGE_URL.replace("{recipeId}",
                     String.valueOf(id)), imageToBeAdded, Image.class);
+
+            ContentValues contentValues = new ContentValues();
+            contentValues.put(ImagesTableDefinition.ID_COLUMN, imageResponse.getId());
+            contentValues.put(ImagesTableDefinition.ORIGINAL_NAME_COLUMN, imageResponse.getOriginalName());
+            contentValues.put(ImagesTableDefinition.ORIGINAL_PATH_COLUMN, imageResponse.getOriginalPath());
+            contentValues.put(ImagesTableDefinition.DATE_CREATED_COLUMN, imageResponse.getDateCreated());
+            contentValues.put(ImagesTableDefinition.LAST_UPDATED_COLUMN, imageResponse.getLastUpdated());
+            contentValues.put(ImagesTableDefinition.IS_MAIN_PICTURE_COLUMN, imageResponse.isMainPicture());
+            contentValues.put(ImagesTableDefinition.COOK_ID_COLUMN, "");
+            contentValues.put(ImagesTableDefinition.RECIPE_ID_COLUMN, id);
+            contentValues.put(ImagesTableDefinition.EXTENSION_COLUMN, imageResponse.getExtension());
+
+            getApplicationContext().getContentResolver().insert(RecipesContentProvider.CONTENT_URI_IMAGES, contentValues);
 
             String pool = "";
             try {
@@ -166,110 +183,7 @@ public class AddNewRecipeService extends Service {
             stopSelf();
         }
 
-        public  String getPath(final Context context, final Uri uri) {
 
-            final boolean isKitKat = Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT;
-
-            // DocumentProvider
-            if (isKitKat && DocumentsContract.isDocumentUri(context, uri)) {
-                // ExternalStorageProvider
-                if (isExternalStorageDocument(uri)) {
-                    final String docId = DocumentsContract.getDocumentId(uri);
-                    final String[] split = docId.split(":");
-                    final String type = split[0];
-
-                    if ("primary".equalsIgnoreCase(type)) {
-                        return Environment.getExternalStorageDirectory() + "/" + split[1];
-                    }
-
-                    // TODO handle non-primary volumes
-                }
-                // DownloadsProvider
-                else if (isDownloadsDocument(uri)) {
-
-                    final String id = DocumentsContract.getDocumentId(uri);
-                    final Uri contentUri = ContentUris.withAppendedId(
-                            Uri.parse("content://downloads/public_downloads"), Long.valueOf(id));
-
-                    return getDataColumn(context, contentUri, null, null);
-                }
-                // MediaProvider
-                else if (isMediaDocument(uri)) {
-                    final String docId = DocumentsContract.getDocumentId(uri);
-                    final String[] split = docId.split(":");
-                    final String type = split[0];
-
-                    Uri contentUri = null;
-                    if ("image".equals(type)) {
-                        contentUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
-                    } else if ("video".equals(type)) {
-                        contentUri = MediaStore.Video.Media.EXTERNAL_CONTENT_URI;
-                    } else if ("audio".equals(type)) {
-                        contentUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
-                    }
-
-                    final String selection = "_id=?";
-                    final String[] selectionArgs = new String[] {
-                            split[1]
-                    };
-
-                    return getDataColumn(context, contentUri, selection, selectionArgs);
-                }
-            }
-            // MediaStore (and general)
-            else if ("content".equalsIgnoreCase(uri.getScheme())) {
-                return getDataColumn(context, uri, null, null);
-            }
-            // File
-            else if ("file".equalsIgnoreCase(uri.getScheme())) {
-                return uri.getPath();
-            }
-
-            return null;
-        }
-
-        public String getDataColumn(Context context, Uri uri, String selection,
-                                           String[] selectionArgs) {
-
-            Cursor cursor = null;
-            final String column = "_data";
-            final String[] projection = {
-                    column
-            };
-
-            try {
-                cursor = context.getContentResolver().query(uri, projection, selection, selectionArgs,
-                        null);
-                if (cursor != null && cursor.moveToFirst()) {
-                    final int column_index = cursor.getColumnIndexOrThrow(column);
-                    return cursor.getString(column_index);
-                }
-            } finally {
-                if (cursor != null)
-                    cursor.close();
-            }
-            return null;
-        }
-
-        public  boolean isExternalStorageDocument(Uri uri) {
-            return "com.android.externalstorage.documents".equals(uri.getAuthority());
-        }
-
-        /**
-         * @param uri The Uri to check.
-         * @return Whether the Uri authority is DownloadsProvider.
-         */
-        public  boolean isDownloadsDocument(Uri uri) {
-            return "com.android.providers.downloads.documents".equals(uri.getAuthority());
-        }
-
-        /**
-         * @param uri The Uri to check.
-         * @return Whether the Uri authority is MediaProvider.
-         */
-        public  boolean isMediaDocument(Uri uri) {
-            return "com.android.providers.media.documents".equals(uri.getAuthority());
-        }
 
     }
 }
