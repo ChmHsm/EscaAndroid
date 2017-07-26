@@ -79,7 +79,7 @@ public class FoodFeedFragment extends Fragment implements LoaderManager.LoaderCa
                 return new CursorLoader(getActivity(), RecipesContentProvider.CONTENT_URI_RECIPES, null,
                         null, null, "dateCreated desc");
             default:
-                throw new IllegalArgumentException("no id handled!");
+                throw new IllegalArgumentException("no recipeId handled!");
         }
     }
 
@@ -105,7 +105,7 @@ public class FoodFeedFragment extends Fragment implements LoaderManager.LoaderCa
 
                 break;
             default:
-                throw new IllegalArgumentException("no loader id handled!");
+                throw new IllegalArgumentException("no loader recipeId handled!");
         }
     }
 

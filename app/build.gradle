@@ -47,9 +47,9 @@ dependencies {
     compile 'com.github.bumptech.glide:glide:4.0.0-RC1'
     compile 'com.android.support:support-v4:25.3.1'
     annotationProcessor 'com.github.bumptech.glide:compiler:4.0.0-RC1'
-    compile 'com.amazonaws:aws-android-sdk-core:2.2.+'
-    compile 'com.amazonaws:aws-android-sdk-s3:2.2.+'
-    compile 'com.amazonaws:aws-android-sdk-ddb:2.2.+'
+    compile 'com.amazonaws:aws-android-sdk-core:2.2.1'
+    compile 'com.amazonaws:aws-android-sdk-s3:2.2.1'
+    compile 'com.amazonaws:aws-android-sdk-ddb:2.2.1'
     compile group: 'org.springframework.security', name: 'spring-security-crypto', version: '3.2.5.RELEASE'
     compile 'com.github.arimorty:floatingsearchview:2.1.1'
 }

@@ -453,9 +453,9 @@ public class RecipesContentProvider extends ContentProvider {
         }
 
         if (!values.containsKey(idColumn))
-            throw new NullPointerException("id attribute not found while" +
+            throw new NullPointerException("recipeId attribute not found while" +
                     " attempting saveOrUpdate on recipes table: the saveOrUpdate method's ContentValues " +
-                    "parameter should contain an \"id\" attribute.");
+                    "parameter should contain an \"recipeId\" attribute.");
 
         long id = (Long) values.get(idColumn);
 

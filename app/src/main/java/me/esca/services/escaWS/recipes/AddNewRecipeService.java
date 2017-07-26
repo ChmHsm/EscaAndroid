@@ -182,8 +182,5 @@ public class AddNewRecipeService extends Service {
             sendBroadcast(intent);
             stopSelf();
         }
-
-
-
     }
 }
