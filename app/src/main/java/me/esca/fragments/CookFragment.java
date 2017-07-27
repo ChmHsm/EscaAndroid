@@ -23,6 +23,7 @@ import android.os.IBinder;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -93,21 +94,22 @@ public class CookFragment extends Fragment implements ServiceConnection {
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
 
         View view = inflater.inflate(R.layout.cook_fragment, container, false);
-        recipeTitleEditText = (EditText)view.findViewById(R.id.title_edit_text);
-        recipeIngredientsEditText = (EditText)view.findViewById(R.id.ingredients_edit_text);
-        recipeInstructionsEditText = (EditText)view.findViewById(R.id.instructions_edit_text);
-        recipePreparationTimeEditText = (EditText)view.findViewById(R.id.prep_time_edit_text);
-        recipePreparationCostEditText = (EditText)view.findViewById(R.id.prep_cost_edit_text);
+        recipeTitleEditText = (EditText) view.findViewById(R.id.title_edit_text);
+        recipeIngredientsEditText = (EditText) view.findViewById(R.id.ingredients_edit_text);
+        recipeInstructionsEditText = (EditText) view.findViewById(R.id.instructions_edit_text);
+        recipePreparationTimeEditText = (EditText) view.findViewById(R.id.prep_time_edit_text);
+        recipePreparationCostEditText = (EditText) view.findViewById(R.id.prep_cost_edit_text);
         difficultyRatingSeekBar = (SeekBar) view.findViewById(R.id.difficultyRatingSeekBar);
-        difficultyTextView = (TextView)view.findViewById(R.id.difficultyTextView);
+        difficultyTextView = (TextView) view.findViewById(R.id.difficultyTextView);
         difficultyTextView.setText(String.valueOf(difficultyRatingSeekBar.getProgress()));
         difficultyRating = difficultyRatingSeekBar.getProgress();
-        if(getActivity().getActionBar() != null )getActivity().getActionBar().hide();
+        if (getActivity().getActionBar() != null) getActivity().getActionBar().hide();
         recipeImageView = (ImageView) view.findViewById(R.id.recipeImageView);
         difficultyRatingSeekBar.setOnSeekBarChangeListener(
 
                 new SeekBar.OnSeekBarChangeListener() {
                     int progress = 0;
+
                     @Override
                     public void onProgressChanged(SeekBar seekBar,
                                                   int progressValue, boolean fromUser) {
@@ -119,6 +121,7 @@ public class CookFragment extends Fragment implements ServiceConnection {
                     public void onStartTrackingTouch(SeekBar seekBar) {
 
                     }
+
                     @Override
                     public void onStopTrackingTouch(SeekBar seekBar) {
                         difficultyRating = progress;
@@ -129,7 +132,7 @@ public class CookFragment extends Fragment implements ServiceConnection {
         addRecipeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(dataValidation()){
+                if (dataValidation()) {
                     recipeToBeAdded = new Recipe(recipeTitleEditText.getText().toString().trim(),
                             difficultyRating,
                             Integer.parseInt(recipePreparationTimeEditText.getText().toString().trim()),
@@ -140,7 +143,7 @@ public class CookFragment extends Fragment implements ServiceConnection {
                     String imageExtension = realImagePath.substring(realImagePath.lastIndexOf("."));
                     imageToBeAdded = new Image(null,
                             imageUri.getPath()
-                            .substring(0, imageUri.getPath().length() - imageUri.getPath().indexOf(".") -1),
+                                    .substring(0, imageUri.getPath().length() - imageUri.getPath().indexOf(".") - 1),
                             imageUri.getPath(),
                             null, null, true, null, recipeToBeAdded, imageExtension);
                     addNewRecipeService = new AddNewRecipeService();
@@ -149,8 +152,7 @@ public class CookFragment extends Fragment implements ServiceConnection {
                     service.putExtra("imageToBeAdded", imageToBeAdded);
                     service.putExtra("recipeImageUrl", imageUri.toString());
                     getActivity().getApplicationContext().startService(service);
-                }
-                else{
+                } else {
                     Toast.makeText(getActivity(), messageBody, Toast.LENGTH_SHORT).show();
                 }
             }
@@ -160,36 +162,18 @@ public class CookFragment extends Fragment implements ServiceConnection {
         addImageButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(verifyStoragePermissions(getActivity())){
-                    Intent photoPickerIntent = new Intent(Intent.ACTION_PICK);
-                    photoPickerIntent.setType("image/*");
-                    startActivityForResult(photoPickerIntent, RESULT_LOAD_IMG);
-                }
+                permissionHandling();
             }
         });
 
         return view;
     }
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-
-        if (requestCode == REQUEST_EXTERNAL_STORAGE) {
-            if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                Intent photoPickerIntent = new Intent(Intent.ACTION_PICK);
-                photoPickerIntent.setType("image/*");
-                startActivityForResult(photoPickerIntent, RESULT_LOAD_IMG);
-            } else {
-                Toast.makeText(getActivity(), "PERMISSION_DENIED", Toast.LENGTH_SHORT).show();
-            }
-        }
-    }
 
     @Override
     public void onActivityResult(int reqCode, int resultCode, Intent data) {
         super.onActivityResult(reqCode, resultCode, data);
-        if(reqCode == RESULT_LOAD_IMG){
+        if (reqCode == RESULT_LOAD_IMG) {
             if (resultCode == RESULT_OK) {
                 try {
                     imageUri = data.getData();
@@ -201,50 +185,49 @@ public class CookFragment extends Fragment implements ServiceConnection {
                     e.printStackTrace();
                     Toast.makeText(getActivity(), "Couldn't retrieve image", Toast.LENGTH_LONG).show();
                 }
-            }else {
-                Toast.makeText(getActivity(), "No image was picked",Toast.LENGTH_LONG).show();
+            } else {
+                Toast.makeText(getActivity(), "No image was picked", Toast.LENGTH_LONG).show();
                 imageUri = null;
             }
         }
     }
 
-    private boolean dataValidation(){
+    private boolean dataValidation() {
         boolean textsValidated = false;
         boolean numbersValidated = false;
         boolean variousValidated = false;//Currently not in use but returned, thus has to be true for the moment.
         messageBody = "";
 
         //Strings validation
-        if(!(recipeTitleEditText.getText().toString().trim().equals("")
+        if (!(recipeTitleEditText.getText().toString().trim().equals("")
                 || recipeIngredientsEditText.getText().toString().trim().equals("")
-                || recipeInstructionsEditText.getText().toString().trim().equals(""))){
+                || recipeInstructionsEditText.getText().toString().trim().equals(""))) {
             textsValidated = true;
-        }else{
+        } else {
             messageBody = "Title, ingredients, instructions, ";
         }
 
         //Numbers validation
-        if(!recipePreparationCostEditText.getText().toString().isEmpty()
+        if (!recipePreparationCostEditText.getText().toString().isEmpty()
                 && !recipePreparationTimeEditText.getText().toString().isEmpty()) {
             double prepCost = Double.valueOf(recipePreparationCostEditText.getText().toString().trim());
             int prepTime = Integer.parseInt(recipePreparationTimeEditText.getText().toString().trim());
-            if(prepCost != 0 && prepTime != 0 && difficultyRating > 0){
+            if (prepCost != 0 && prepTime != 0 && difficultyRating > 0) {
                 numbersValidated = true;
             }
-        }
-        else{
+        } else {
             messageBody = messageBody + "cost, time, ";
         }
 
-        if(imageUri != null){
+        if (imageUri != null) {
             variousValidated = true;
-        }
-        else{
+        } else {
             messageBody = messageBody + "image, ";
         }
-        if(messageBody.length() > 2) messageBody = messageBody.substring(0, messageBody.length() - 2);
-        if(textsValidated && numbersValidated && !variousValidated)
-        messageBody = messageBody + " is mandatory!";
+        if (messageBody.length() > 2)
+            messageBody = messageBody.substring(0, messageBody.length() - 2);
+        if (textsValidated && numbersValidated && !variousValidated)
+            messageBody = messageBody + " is mandatory!";
         else messageBody = messageBody + " are mandatory!";
         messageBody = messageBody.substring(0, 1).toUpperCase() + messageBody.substring(1).toLowerCase();
 
@@ -270,26 +253,51 @@ public class CookFragment extends Fragment implements ServiceConnection {
                 Toast.makeText(getActivity(), "Recipe was added in "
                         + resultLocation, Toast.LENGTH_SHORT).show();
             }
-            if(intent.getAction().equals("ImageServiceIsDone")){
+            if (intent.getAction().equals("ImageServiceIsDone")) {
                 Toast.makeText(getActivity(), "Image was uploaded ", Toast.LENGTH_SHORT).show();
             }
         }
     }
 
-    public static boolean verifyStoragePermissions(Activity activity) {
-        // Check if we have read or write permission
-        int readPermission = ActivityCompat.checkSelfPermission(activity, Manifest.permission.READ_EXTERNAL_STORAGE);
+    private void permissionHandling() {
+        if (ContextCompat.checkSelfPermission(getActivity(),
+                Manifest.permission.READ_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED) {
 
-        if (readPermission != PackageManager.PERMISSION_GRANTED) {
-            // We don't have permission so prompt the user
 
-            ActivityCompat.requestPermissions(
-                    activity,
-                    PERMISSIONS_STORAGE,
-                    REQUEST_EXTERNAL_STORAGE
-            );
-            return false;
+            // No explanation needed, we can request the permission.
+
+            requestPermissions(
+                    new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                    REQUEST_EXTERNAL_STORAGE);
+
+            // MY_PERMISSIONS_REQUEST_READ_CONTACTS is an
+            // app-defined int constant. The callback method gets the
+            // result of the request.
+        } else {
+            Intent photoPickerIntent = new Intent(Intent.ACTION_PICK);
+            photoPickerIntent.setType("image/*");
+            startActivityForResult(photoPickerIntent, RESULT_LOAD_IMG);
         }
-        return true;
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           @NonNull String permissions[], @NonNull int[] grantResults) {
+        switch (requestCode) {
+            case REQUEST_EXTERNAL_STORAGE: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+                    Intent photoPickerIntent = new Intent(Intent.ACTION_PICK);
+                    photoPickerIntent.setType("image/*");
+                    startActivityForResult(photoPickerIntent, RESULT_LOAD_IMG);
+                }
+            }
+
+            // other 'case' lines to check for other
+            // permissions this app might request
+        }
     }
 }

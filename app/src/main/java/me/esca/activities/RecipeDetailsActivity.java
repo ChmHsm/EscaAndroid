@@ -48,7 +48,6 @@ public class RecipeDetailsActivity extends Activity{
 
             recipeDetailImageView = (ImageView) findViewById(R.id.recipeDetailImageView);
 
-            //TODO get image from DB, non existent in DB then check WS
             GlideApp.with(this)
                     .load("http://escaws.s3.amazonaws.com/Image storage directory/"+imageId+imageExtension)
                     .placeholder(getDrawable(R.drawable.recipe_image_placeholder))

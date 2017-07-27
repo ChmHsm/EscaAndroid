@@ -1,8 +1,10 @@
 package me.esca.fragments;
 
 import android.app.Fragment;
+import android.content.ContentValues;
 import android.content.Intent;
 import android.database.Cursor;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
@@ -25,11 +27,18 @@ import com.arlib.floatingsearchview.suggestions.SearchSuggestionsAdapter;
 import com.arlib.floatingsearchview.suggestions.model.SearchSuggestion;
 import com.arlib.floatingsearchview.util.Util;
 
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.RestTemplate;
+
 import me.esca.activities.RecipeDetailsActivity;
 import me.esca.dbRelated.contentProvider.RecipesContentProvider;
 import me.esca.dbRelated.image.tableUtils.ImagesTableDefinition;
 import me.esca.dbRelated.recipe.tableUtils.RecipesTableDefinition;
+import me.esca.model.Image;
 import me.esca.model.Recipe;
+import me.esca.utils.glide.GlideApp;
 import me.esca.utils.searchViewUtils.adapter.RecipesSearchResultsAdapter;
 import me.esca.utils.searchViewUtils.data.RecipesSuggestion;
 import me.esca.utils.searchViewUtils.data.RecipesDataHelper;
@@ -38,6 +47,9 @@ import java.util.List;
 
 import me.esca.R;
 import me.esca.utils.searchViewUtils.data.SearchResultsEntity;
+
+import static me.esca.services.escaWS.Utils.GET_IMAGE_URL;
+import static me.esca.services.escaWS.Utils.MAIN_DOMAIN_NAME;
 
 /**
  * Created by Me on 18/06/2017.
@@ -293,20 +305,7 @@ public class SearchFragment extends Fragment {
             public void onClick(SearchResultsEntity searchResultsEntity) {
                 if(searchResultsEntity.getEntityType() == 1){
                     if(searchResultsEntity.getId() > 0){
-                        Cursor cursor = getActivity().getContentResolver().query(RecipesContentProvider.CONTENT_URI_IMAGES,
-                                new String[]{ImagesTableDefinition.ID_COLUMN, ImagesTableDefinition.EXTENSION_COLUMN},
-                                ImagesTableDefinition.RECIPE_ID_COLUMN + " = ?",
-                                new String[] {String.valueOf(searchResultsEntity.getId())}, null);
-                        if(cursor != null && cursor.getCount() > 0){
-                            cursor.moveToNext();
-                            Intent intent = new Intent(getActivity(), RecipeDetailsActivity.class);
-                            intent.putExtra("recipeId", searchResultsEntity.getId());
-                            intent.putExtra("imageId", cursor.getLong(
-                                    cursor.getColumnIndex(ImagesTableDefinition.ID_COLUMN)));
-                            intent.putExtra("imageExtension", cursor.getLong(
-                                    cursor.getColumnIndex(ImagesTableDefinition.EXTENSION_COLUMN)));
-                            startActivity(intent);
-                        }
+                        new GetRecipeImage().execute(searchResultsEntity.getId());
                     }
 
                 }
@@ -315,6 +314,74 @@ public class SearchFragment extends Fragment {
                 }
             }
         });
+    }
+
+    private class GetRecipeImage extends AsyncTask<Long, Image, Image> {
+        private Long imageId;
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+        }
+
+        @Override
+        protected Image doInBackground(Long[] params) {
+
+            imageId = params[0];
+            Cursor cursor = getActivity().getContentResolver().query(RecipesContentProvider.CONTENT_URI_IMAGES,
+                    null, ImagesTableDefinition.RECIPE_ID_COLUMN + " = ? and " +
+                            ImagesTableDefinition.IS_MAIN_PICTURE_COLUMN + " = 1", new String[]{String.valueOf(params[0])},
+                    null);
+
+            if(cursor != null && cursor.getCount() > 0){
+                cursor.moveToFirst();
+                return new Image(
+                        cursor.getLong(cursor.getColumnIndex(ImagesTableDefinition.ID_COLUMN)),
+                        cursor.getString(cursor.getColumnIndex(ImagesTableDefinition.ORIGINAL_NAME_COLUMN)),
+                        cursor.getString(cursor.getColumnIndex(ImagesTableDefinition.ORIGINAL_NAME_COLUMN)),
+                        cursor.getString(cursor.getColumnIndex(ImagesTableDefinition.DATE_CREATED_COLUMN)),
+                        cursor.getString(cursor.getColumnIndex(ImagesTableDefinition.LAST_UPDATED_COLUMN)),
+                        true,
+                        null, null,
+                        cursor.getString(cursor.getColumnIndex(ImagesTableDefinition.EXTENSION_COLUMN)));
+            }
+            else{
+                RestTemplate restTemplate = new RestTemplate();
+                ResponseEntity<Image> response =
+                        restTemplate.exchange(MAIN_DOMAIN_NAME+GET_IMAGE_URL.replace("{recipeId}",
+                                String.valueOf(params[0])),
+                                HttpMethod.GET, null, new ParameterizedTypeReference<Image>() {
+                                });
+                if (response != null) {
+                    ContentValues contentValues = new ContentValues();
+                    contentValues.put(ImagesTableDefinition.ID_COLUMN, response.getBody().getId());
+                    contentValues.put(ImagesTableDefinition.ORIGINAL_NAME_COLUMN, response.getBody().getOriginalName());
+                    contentValues.put(ImagesTableDefinition.ORIGINAL_PATH_COLUMN, response.getBody().getOriginalPath());
+                    contentValues.put(ImagesTableDefinition.DATE_CREATED_COLUMN, response.getBody().getDateCreated());
+                    contentValues.put(ImagesTableDefinition.LAST_UPDATED_COLUMN, response.getBody().getLastUpdated());
+                    contentValues.put(ImagesTableDefinition.IS_MAIN_PICTURE_COLUMN, response.getBody().isMainPicture());
+                    contentValues.put(ImagesTableDefinition.COOK_ID_COLUMN, "");
+                    contentValues.put(ImagesTableDefinition.RECIPE_ID_COLUMN, String.valueOf(params[0]));
+                    contentValues.put(ImagesTableDefinition.EXTENSION_COLUMN, response.getBody().getExtension());
+
+
+                    getActivity().getContentResolver().insert(RecipesContentProvider.CONTENT_URI_IMAGES, contentValues);
+
+                }
+                return response != null ? response.getBody() : null;
+            }
+        }
+
+        @Override
+        protected void onPostExecute(Image image) {
+            super.onPostExecute(image);
+            Intent intent = new Intent(getActivity(), RecipeDetailsActivity.class);
+            intent.putExtra("recipeId", imageId);
+            intent.putExtra("imageId", image.getId());
+            intent.putExtra("imageExtension", image.getExtension());
+            startActivity(intent);
+
+        }
     }
 
 

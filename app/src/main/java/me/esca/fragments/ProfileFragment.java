@@ -52,7 +52,7 @@ public class ProfileFragment extends Fragment implements LoaderManager.LoaderCal
         switch (id) {
             case 1:
                 return new CursorLoader(getActivity(), RecipesContentProvider.CONTENT_URI_RECIPES, null,
-                        null, null, "dateCreated desc");
+                        RecipesTableDefinition.COOK_COLUMN +"= ?", new String[]{"1"}, "dateCreated desc");
             default:
                 throw new IllegalArgumentException("no recipeId handled!");
         }
