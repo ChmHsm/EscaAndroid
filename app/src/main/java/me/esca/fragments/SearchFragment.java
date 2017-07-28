@@ -1,11 +1,17 @@
 package me.esca.fragments;
 
 import android.app.Fragment;
+import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.database.Cursor;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -38,6 +44,8 @@ import me.esca.dbRelated.image.tableUtils.ImagesTableDefinition;
 import me.esca.dbRelated.recipe.tableUtils.RecipesTableDefinition;
 import me.esca.model.Image;
 import me.esca.model.Recipe;
+import me.esca.services.escaWS.images.FetchImageByRecipeId;
+import me.esca.services.escaWS.recipes.AddNewRecipeService;
 import me.esca.utils.glide.GlideApp;
 import me.esca.utils.searchViewUtils.adapter.RecipesSearchResultsAdapter;
 import me.esca.utils.searchViewUtils.data.RecipesSuggestion;
@@ -55,23 +63,46 @@ import static me.esca.services.escaWS.Utils.MAIN_DOMAIN_NAME;
  * Created by Me on 18/06/2017.
  */
 
-public class SearchFragment extends Fragment {
+public class SearchFragment extends Fragment implements ServiceConnection {
 
     private final String TAG = "BlankFragment";
-
     public static final long FIND_SUGGESTION_SIMULATED_DELAY = 250;
-
     private FloatingSearchView mSearchView;
-
     private RecyclerView mSearchResultsList;
     private RecipesSearchResultsAdapter mSearchResultsAdapter;
-
     private boolean mIsDarkSearchTheme = false;
-
     private String mLastQuery = "";
+    private Long searchEntityId;
+    private DataUpdateReceiver dataUpdateReceiver;
+    private FetchImageByRecipeId fetchImageByRecipeId;
 
     public SearchFragment() {
         // Required empty public constructor
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (dataUpdateReceiver == null) dataUpdateReceiver = new DataUpdateReceiver();
+        IntentFilter intentFilter = new IntentFilter("FetchImageByRecipeId");
+        getActivity().registerReceiver(dataUpdateReceiver, intentFilter);
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        if (dataUpdateReceiver != null) getActivity().unregisterReceiver(dataUpdateReceiver);
+    }
+
+    @Override
+    public void onServiceConnected(ComponentName name, IBinder service) {
+        FetchImageByRecipeId.MyBinder binder = (FetchImageByRecipeId.MyBinder) service;
+        fetchImageByRecipeId = binder.getService();
+    }
+
+    @Override
+    public void onServiceDisconnected(ComponentName name) {
+        fetchImageByRecipeId = null;
     }
 
     @Nullable
@@ -305,7 +336,11 @@ public class SearchFragment extends Fragment {
             public void onClick(SearchResultsEntity searchResultsEntity) {
                 if(searchResultsEntity.getEntityType() == 1){
                     if(searchResultsEntity.getId() > 0){
-                        new GetRecipeImage().execute(searchResultsEntity.getId());
+                        fetchImageByRecipeId = new FetchImageByRecipeId();
+                        searchEntityId = searchResultsEntity.getId();
+                        Intent service = new Intent(getActivity().getApplicationContext(), FetchImageByRecipeId.class);
+                        service.putExtra("recipeId", searchEntityId);
+                        getActivity().getApplicationContext().startService(service);
                     }
 
                 }
@@ -316,76 +351,32 @@ public class SearchFragment extends Fragment {
         });
     }
 
-    private class GetRecipeImage extends AsyncTask<Long, Image, Image> {
-        private Long imageId;
-
+    private class DataUpdateReceiver extends BroadcastReceiver {
         @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-        }
+        public void onReceive(Context context, Intent intent) {
+            if (intent.getAction().equals("FetchImageByRecipeId")) {
+                Image image = (Image) intent.getSerializableExtra("imageResult");
+                Intent intent2 = new Intent(getActivity(), RecipeDetailsActivity.class);
+                intent2.putExtra("recipeId", searchEntityId);
 
-        @Override
-        protected Image doInBackground(Long[] params) {
-
-            imageId = params[0];
-            Cursor cursor = getActivity().getContentResolver().query(RecipesContentProvider.CONTENT_URI_IMAGES,
-                    null, ImagesTableDefinition.RECIPE_ID_COLUMN + " = ? and " +
-                            ImagesTableDefinition.IS_MAIN_PICTURE_COLUMN + " = 1", new String[]{String.valueOf(params[0])},
-                    null);
-
-            if(cursor != null && cursor.getCount() > 0){
-                cursor.moveToFirst();
-                return new Image(
-                        cursor.getLong(cursor.getColumnIndex(ImagesTableDefinition.ID_COLUMN)),
-                        cursor.getString(cursor.getColumnIndex(ImagesTableDefinition.ORIGINAL_NAME_COLUMN)),
-                        cursor.getString(cursor.getColumnIndex(ImagesTableDefinition.ORIGINAL_NAME_COLUMN)),
-                        cursor.getString(cursor.getColumnIndex(ImagesTableDefinition.DATE_CREATED_COLUMN)),
-                        cursor.getString(cursor.getColumnIndex(ImagesTableDefinition.LAST_UPDATED_COLUMN)),
-                        true,
-                        null, null,
-                        cursor.getString(cursor.getColumnIndex(ImagesTableDefinition.EXTENSION_COLUMN)));
-            }
-            else{
-                RestTemplate restTemplate = new RestTemplate();
-                ResponseEntity<Image> response =
-                        restTemplate.exchange(MAIN_DOMAIN_NAME+GET_IMAGE_URL.replace("{recipeId}",
-                                String.valueOf(params[0])),
-                                HttpMethod.GET, null, new ParameterizedTypeReference<Image>() {
-                                });
-                if (response != null) {
-                    ContentValues contentValues = new ContentValues();
-                    contentValues.put(ImagesTableDefinition.ID_COLUMN, response.getBody().getId());
-                    contentValues.put(ImagesTableDefinition.ORIGINAL_NAME_COLUMN, response.getBody().getOriginalName());
-                    contentValues.put(ImagesTableDefinition.ORIGINAL_PATH_COLUMN, response.getBody().getOriginalPath());
-                    contentValues.put(ImagesTableDefinition.DATE_CREATED_COLUMN, response.getBody().getDateCreated());
-                    contentValues.put(ImagesTableDefinition.LAST_UPDATED_COLUMN, response.getBody().getLastUpdated());
-                    contentValues.put(ImagesTableDefinition.IS_MAIN_PICTURE_COLUMN, response.getBody().isMainPicture());
-                    contentValues.put(ImagesTableDefinition.COOK_ID_COLUMN, "");
-                    contentValues.put(ImagesTableDefinition.RECIPE_ID_COLUMN, String.valueOf(params[0]));
-                    contentValues.put(ImagesTableDefinition.EXTENSION_COLUMN, response.getBody().getExtension());
-
-
-                    getActivity().getContentResolver().insert(RecipesContentProvider.CONTENT_URI_IMAGES, contentValues);
+                if(image != null){
+                    intent2.putExtra("imageId", image.getId());
+                    intent2.putExtra("imageExtension", image.getExtension());
 
                 }
-                return response != null ? response.getBody() : null;
+                else{
+                    //TODO Oops, we couldn't retrieve the image for some reason
+
+                }
+                startActivity(intent2);
             }
         }
-
-        @Override
-        protected void onPostExecute(Image image) {
-            super.onPostExecute(image);
-            Intent intent = new Intent(getActivity(), RecipeDetailsActivity.class);
-            intent.putExtra("recipeId", imageId);
-            intent.putExtra("imageId", image.getId());
-            intent.putExtra("imageExtension", image.getExtension());
-            startActivity(intent);
-
-        }
     }
+
 
 
     private void setupDrawer() {
 //        attachSearchViewActivityDrawer(mSearchView);
     }
+
 }

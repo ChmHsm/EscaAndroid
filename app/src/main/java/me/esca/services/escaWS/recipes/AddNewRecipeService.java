@@ -32,10 +32,6 @@ import org.springframework.http.converter.json.MappingJackson2HttpMessageConvert
 import org.springframework.web.client.RestTemplate;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.InputStream;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -77,18 +73,6 @@ public class AddNewRecipeService extends Service {
         this.imageUri = Uri.parse(intent.getStringExtra("recipeImageUrl")) ;
         new AddNewRecipe().execute();
         return Service.START_NOT_STICKY;
-    }
-
-    public URI getResultLocation() {
-        return resultLocation;
-    }
-
-    public Recipe getRecipeToBeAdded() {
-        return recipeToBeAdded;
-    }
-
-    public void setRecipeToBeAdded(Recipe recipeToBeAdded) {
-        this.recipeToBeAdded = recipeToBeAdded;
     }
 
     @Nullable
