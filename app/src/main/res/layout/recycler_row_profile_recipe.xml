@@ -16,8 +16,6 @@
             android:id="@+id/recipeThumbnail"
             android:layout_width="match_parent"
             android:layout_height="130dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:clickable="true"
             android:scaleType="centerCrop"
             android:src="@drawable/recipe_image_placeholder"/>
 
@@ -30,7 +28,6 @@
             android:ellipsize="end"
             android:minLines="2"
             android:textSize="14sp"
-            android:text="Title"
             android:gravity="center"
             android:padding="5dp"/>
 

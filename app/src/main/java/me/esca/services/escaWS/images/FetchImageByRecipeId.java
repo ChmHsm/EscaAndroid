@@ -72,7 +72,7 @@ public class FetchImageByRecipeId extends Service {
 
             if(cursor != null && cursor.getCount() > 0){
                 cursor.moveToFirst();
-                return new Image(
+                Image image = new Image(
                         cursor.getLong(cursor.getColumnIndex(ImagesTableDefinition.ID_COLUMN)),
                         cursor.getString(cursor.getColumnIndex(ImagesTableDefinition.ORIGINAL_NAME_COLUMN)),
                         cursor.getString(cursor.getColumnIndex(ImagesTableDefinition.ORIGINAL_NAME_COLUMN)),
@@ -81,6 +81,8 @@ public class FetchImageByRecipeId extends Service {
                         true,
                         null, null,
                         cursor.getString(cursor.getColumnIndex(ImagesTableDefinition.EXTENSION_COLUMN)));
+                cursor.close();
+                return image;
             }
             else{
                 if(Connectivity.isNetworkAvailable(FetchImageByRecipeId.this)) {

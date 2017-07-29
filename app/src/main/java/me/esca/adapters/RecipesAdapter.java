@@ -159,7 +159,7 @@ public class RecipesAdapter extends CursorRecyclerViewAdapter {
 
                 if(cursor != null && cursor.getCount() > 0){
                     cursor.moveToFirst();
-                    return new Image(
+                    Image image = new Image(
                             cursor.getLong(cursor.getColumnIndex(ImagesTableDefinition.ID_COLUMN)),
                             cursor.getString(cursor.getColumnIndex(ImagesTableDefinition.ORIGINAL_NAME_COLUMN)),
                             cursor.getString(cursor.getColumnIndex(ImagesTableDefinition.ORIGINAL_NAME_COLUMN)),
@@ -168,6 +168,9 @@ public class RecipesAdapter extends CursorRecyclerViewAdapter {
                             true,
                             null, null,
                             cursor.getString(cursor.getColumnIndex(ImagesTableDefinition.EXTENSION_COLUMN)));
+
+                    cursor.close();
+                    return image;
                 }
                 else{
                     RestTemplate restTemplate = new RestTemplate();
@@ -188,9 +191,7 @@ public class RecipesAdapter extends CursorRecyclerViewAdapter {
                         contentValues.put(ImagesTableDefinition.RECIPE_ID_COLUMN, String.valueOf(params[0]));
                         contentValues.put(ImagesTableDefinition.EXTENSION_COLUMN, response.getBody().getExtension());
 
-
                         mContext.getContentResolver().insert(RecipesContentProvider.CONTENT_URI_IMAGES, contentValues);
-
                     }
                     return response != null ? response.getBody() : null;
                 }

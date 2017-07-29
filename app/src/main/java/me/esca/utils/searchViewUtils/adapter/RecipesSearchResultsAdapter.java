@@ -13,6 +13,8 @@ import android.widget.TextView;
 
 import com.arlib.floatingsearchview.util.Util;
 
+import org.w3c.dom.Text;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -41,6 +43,9 @@ public class RecipesSearchResultsAdapter extends RecyclerView.Adapter<RecipesSea
         public final TextView mColorValue;
         public final View mTextContainer;
         public final ImageView searchResultImage;
+        public final TextView cookName;
+        public final TextView cookedBy;
+
 
         public ViewHolder(View view) {
             super(view);
@@ -48,6 +53,8 @@ public class RecipesSearchResultsAdapter extends RecyclerView.Adapter<RecipesSea
             mColorValue = (TextView) view.findViewById(R.id.color_value);
             mTextContainer = view.findViewById(R.id.text_container);
             searchResultImage = (ImageView) view.findViewById(R.id.searchResultImage);
+            cookName = (TextView) view.findViewById(R.id.cookName);
+            cookedBy = (TextView) view.findViewById(R.id.cooked_by);
         }
     }
 
@@ -78,10 +85,15 @@ public class RecipesSearchResultsAdapter extends RecyclerView.Adapter<RecipesSea
         if(searchResultsEntity.getEntityType() == 1){
             holder.mColorName.setTextColor(viewContext.getResources().getColor(R.color.colorAccent, null));
             holder.searchResultImage.setImageResource(R.drawable.icon_cooking);
+            holder.cookName.setVisibility(View.VISIBLE);
+            holder.cookedBy.setVisibility(View.VISIBLE);
+            holder.cookName.setText(searchResultsEntity.getCookName());
         }
         else if(searchResultsEntity.getEntityType() == 2){
             holder.mColorName.setTextColor(viewContext.getResources().getColor(R.color.black, null));
             holder.searchResultImage.setImageResource(R.drawable.profile_photo_cook);
+            holder.cookName.setVisibility(View.GONE);
+            holder.cookedBy.setVisibility(View.GONE);
         }
 
         if(mLastAnimatedItemPosition < position){

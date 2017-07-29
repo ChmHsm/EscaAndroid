@@ -9,18 +9,29 @@ public class SearchResultsEntity {
     private Long id;
     private String headerContent;
     private String DescriptionContent;
-
+    private String cookName;
     //Entity reference type (1: Recipe, 2: Cook)
     private int entityType;
 
-    public SearchResultsEntity(Long id, String headerContent, String descriptionContent, int entityType) {
+
+    public SearchResultsEntity(Long id, String headerContent, String descriptionContent, int entityType, String cookName) {
         this.id = id;
         this.headerContent = headerContent;
-        DescriptionContent = descriptionContent;
+        this.DescriptionContent = descriptionContent;
         this.entityType = entityType;
+        this.cookName = cookName;
+
     }
 
     public SearchResultsEntity() {
+    }
+
+    public String getCookName() {
+        return cookName;
+    }
+
+    public void setCookName(String cookName) {
+        this.cookName = cookName;
     }
 
     public Long getId() {

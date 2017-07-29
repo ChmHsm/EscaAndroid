@@ -3,13 +3,10 @@ package me.esca.fragments;
 import android.app.Fragment;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
-import android.database.Cursor;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
@@ -24,6 +21,7 @@ import android.support.v7.widget.RecyclerView;
 import android.text.Html;
 import android.util.Log;
 import android.view.MenuItem;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -33,20 +31,9 @@ import com.arlib.floatingsearchview.suggestions.SearchSuggestionsAdapter;
 import com.arlib.floatingsearchview.suggestions.model.SearchSuggestion;
 import com.arlib.floatingsearchview.util.Util;
 
-import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.client.RestTemplate;
-
 import me.esca.activities.RecipeDetailsActivity;
-import me.esca.dbRelated.contentProvider.RecipesContentProvider;
-import me.esca.dbRelated.image.tableUtils.ImagesTableDefinition;
-import me.esca.dbRelated.recipe.tableUtils.RecipesTableDefinition;
 import me.esca.model.Image;
-import me.esca.model.Recipe;
 import me.esca.services.escaWS.images.FetchImageByRecipeId;
-import me.esca.services.escaWS.recipes.AddNewRecipeService;
-import me.esca.utils.glide.GlideApp;
 import me.esca.utils.searchViewUtils.adapter.RecipesSearchResultsAdapter;
 import me.esca.utils.searchViewUtils.data.RecipesSuggestion;
 import me.esca.utils.searchViewUtils.data.RecipesDataHelper;
@@ -55,9 +42,6 @@ import java.util.List;
 
 import me.esca.R;
 import me.esca.utils.searchViewUtils.data.SearchResultsEntity;
-
-import static me.esca.services.escaWS.Utils.GET_IMAGE_URL;
-import static me.esca.services.escaWS.Utils.MAIN_DOMAIN_NAME;
 
 /**
  * Created by Me on 18/06/2017.
@@ -169,7 +153,11 @@ public class SearchFragment extends Fragment implements ServiceConnection {
             public void onSuggestionClicked(final SearchSuggestion searchSuggestion) {
 
                 RecipesSuggestion RecipesSuggestion = (RecipesSuggestion) searchSuggestion;
-                RecipesDataHelper.findColors(getActivity(), RecipesSuggestion.getBody(),
+                InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+
+                imm.hideSoftInputFromWindow(getActivity().getCurrentFocus() != null ?
+                        getActivity().getCurrentFocus().getWindowToken() : null, 0);
+                RecipesDataHelper.findEntities(getActivity(), RecipesSuggestion.getBody(),
                         new RecipesDataHelper.OnFindRecipesListener() {
 
                             @Override
@@ -187,7 +175,7 @@ public class SearchFragment extends Fragment implements ServiceConnection {
             public void onSearchAction(String query) {
                 mLastQuery = query;
 
-                RecipesDataHelper.findColors(getActivity(), query,
+                RecipesDataHelper.findEntities(getActivity(), query,
                         new RecipesDataHelper.OnFindRecipesListener() {
 
                             @Override
