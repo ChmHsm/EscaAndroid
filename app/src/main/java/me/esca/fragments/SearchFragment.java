@@ -155,8 +155,7 @@ public class SearchFragment extends Fragment implements ServiceConnection {
                 RecipesSuggestion RecipesSuggestion = (RecipesSuggestion) searchSuggestion;
                 InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
 
-                imm.hideSoftInputFromWindow(getActivity().getCurrentFocus() != null ?
-                        getActivity().getCurrentFocus().getWindowToken() : null, 0);
+                imm.hideSoftInputFromWindow(getActivity().getCurrentFocus() != null ? getActivity().getCurrentFocus().getWindowToken() : null, 0);
                 RecipesDataHelper.findEntities(getActivity(), RecipesSuggestion.getBody(),
                         new RecipesDataHelper.OnFindRecipesListener() {
 
