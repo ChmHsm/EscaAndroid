@@ -14,9 +14,9 @@ Status: Almost done  | Status: Almost done | Done
 
 Look-up | User profile
 ------------ | -------------
-<img src="https://user-images.githubusercontent.com/12183061/28490790-eab0ce60-6ee2-11e7-9a66-20c8b0e58e37.png"/> | <img src="https://user-images.githubusercontent.com/12183061/27520262-66ba4e20-59f6-11e7-853c-6f59f56af808.png"/>
+<img src="https://user-images.githubusercontent.com/12183061/28748124-61da9c4c-74af-11e7-9ea6-199aa33ff140.png"/> | <img src="https://user-images.githubusercontent.com/12183061/28748125-67d75f7c-74af-11e7-8e7e-c78a6580b732.png"/>
 Look-up cooks and recipes | Cook's (user's) details
-Status: Almost done | Not started yet
+Status: Almost done | Work in progress
 ### Esca is built with :green_heart: and:
   - Java 8
   - Spring Boot 1.5 (back-end of course), back-end project is here on [github](https://github.com/ChmHsm/RecipesWS) aswell.
