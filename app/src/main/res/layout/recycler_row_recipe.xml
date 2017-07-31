@@ -78,16 +78,19 @@
                 android:orientation="vertical"
                 android:layout_marginStart="5dp">
 
-                <ImageView
-                    android:id="@+id/imageView3"
-                    android:layout_width="30dp"
-                    android:layout_height="30dp"
-                    android:layout_gravity="center"
-                    android:scaleType="fitXY"
-                    android:src="@drawable/bottom_bar_favorite" />
+                <com.varunest.sparkbutton.SparkButton
+                    android:id="@+id/likeButton"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    app:sparkbutton_activeImage="@drawable/bottom_bar_favorite_active"
+                    app:sparkbutton_inActiveImage="@drawable/bottom_bar_favorite"
+                    app:sparkbutton_iconSize="30dp"
+                    app:sparkbutton_primaryColor="@color/red"
+                    app:sparkbutton_secondaryColor="@color/colorAccent"
+                    app:sparkbutton_animationSpeed="0.9"/>
 
                 <TextView
-                    android:id="@+id/textView"
+                    android:id="@+id/number_of_likes"
                     android:layout_width="wrap_content"
                     android:layout_height="0dp"
                     android:layout_gravity="center"

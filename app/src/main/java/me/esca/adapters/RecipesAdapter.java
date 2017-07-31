@@ -4,6 +4,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
+import android.database.DatabaseUtils;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.support.v7.widget.RecyclerView;
@@ -14,23 +15,33 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.varunest.sparkbutton.SparkButton;
+
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import me.esca.R;
 import me.esca.activities.RecipeDetailsActivity;
 import me.esca.dbRelated.contentProvider.RecipesContentProvider;
 import me.esca.dbRelated.cook.tableUtils.CooksTableDefinition;
 import me.esca.dbRelated.image.tableUtils.ImagesTableDefinition;
+import me.esca.dbRelated.likeRelationship.tableUtils.LikesTableDefinition;
 import me.esca.dbRelated.recipe.tableUtils.RecipesTableDefinition;
+import me.esca.model.Cook;
 import me.esca.model.Image;
+import me.esca.model.LikeRelationship;
+import me.esca.services.escaWS.Utils;
 import me.esca.utils.CursorRecyclerViewAdapter;
 import me.esca.utils.DateFormatting;
 import me.esca.utils.glide.GlideApp;
 
 import static me.esca.services.escaWS.Utils.GET_IMAGE_URL;
+import static me.esca.services.escaWS.Utils.GET_LIKES_URL;
 import static me.esca.services.escaWS.Utils.MAIN_DOMAIN_NAME;
 
 /**
@@ -64,12 +75,11 @@ public class RecipesAdapter extends CursorRecyclerViewAdapter {
                 Long recipeId = ((ViewHolder) viewHolder).id;
                 Long imageId = ((ViewHolder) viewHolder).imageId;
                 String imageExtension = ((ViewHolder) viewHolder).imageExtension;
-                if(recipeId <= 0){
+                if (recipeId <= 0) {
                     throw new IllegalArgumentException();
-                }
-                else{
+                } else {
                     Intent intent = new Intent(mContext, RecipeDetailsActivity.class);
-                    intent.putExtra("recipeId",recipeId);
+                    intent.putExtra("recipeId", recipeId);
                     intent.putExtra("imageId", imageId);
                     intent.putExtra("imageExtension", imageExtension);
                     mContext.startActivity(intent);
@@ -98,6 +108,8 @@ public class RecipesAdapter extends CursorRecyclerViewAdapter {
         public Long id;
         public Long imageId;
         public String imageExtension;
+        public SparkButton likeButton;
+        public TextView numberOfLikes;
 
         public ViewHolder(View view) {
             super(view);
@@ -107,6 +119,8 @@ public class RecipesAdapter extends CursorRecyclerViewAdapter {
             recipeDate = (TextView) view.findViewById(R.id.recipe_date_text_view);
             cookNameTextView = (TextView) view.findViewById(R.id.cook_name_text_view);
             followTextView = (TextView) view.findViewById(R.id.follow_text_view);
+            likeButton = (SparkButton) view.findViewById(R.id.likeButton);
+            numberOfLikes = (TextView) view.findViewById(R.id.number_of_likes);
         }
 
         public void setData(Cursor c) {
@@ -122,11 +136,11 @@ public class RecipesAdapter extends CursorRecyclerViewAdapter {
             new GetRecipeImage().execute(id);
 
             Cursor cursor = mContext.getContentResolver().query(
-                    Uri.parse(RecipesContentProvider.CONTENT_URI_COOKS+"/"
-                            +c.getString(c.getColumnIndex(RecipesTableDefinition.COOK_COLUMN))),
+                    Uri.parse(RecipesContentProvider.CONTENT_URI_COOKS + "/"
+                            + c.getString(c.getColumnIndex(RecipesTableDefinition.COOK_COLUMN))),
                     new String[]{CooksTableDefinition.USERNAME_COLUMN},
                     null, null, null);
-            if(cursor != null && cursor.getCount() > 0){
+            if (cursor != null && cursor.getCount() > 0) {
                 cursor.moveToFirst();
                 cookNameTextView.setText(cursor.getString(
                         cursor.getColumnIndex(CooksTableDefinition.USERNAME_COLUMN)));
@@ -140,9 +154,11 @@ public class RecipesAdapter extends CursorRecyclerViewAdapter {
                 }
             });
 
+            new GetRecipeLikes().execute(id);
+
         }
 
-        private class GetRecipeImage extends AsyncTask<Long, Image, Image>{
+        private class GetRecipeImage extends AsyncTask<Long, Image, Image> {
 
             @Override
             protected void onPreExecute() {
@@ -154,10 +170,10 @@ public class RecipesAdapter extends CursorRecyclerViewAdapter {
 
                 Cursor cursor = mContext.getContentResolver().query(RecipesContentProvider.CONTENT_URI_IMAGES,
                         null, ImagesTableDefinition.RECIPE_ID_COLUMN + " = ? and " +
-                        ImagesTableDefinition.IS_MAIN_PICTURE_COLUMN + " = 1", new String[]{String.valueOf(params[0])},
+                                ImagesTableDefinition.IS_MAIN_PICTURE_COLUMN + " = 1", new String[]{String.valueOf(params[0])},
                         null);
 
-                if(cursor != null && cursor.getCount() > 0){
+                if (cursor != null && cursor.getCount() > 0) {
                     cursor.moveToFirst();
                     Image image = new Image(
                             cursor.getLong(cursor.getColumnIndex(ImagesTableDefinition.ID_COLUMN)),
@@ -171,11 +187,10 @@ public class RecipesAdapter extends CursorRecyclerViewAdapter {
 
                     cursor.close();
                     return image;
-                }
-                else{
+                } else {
                     RestTemplate restTemplate = new RestTemplate();
                     ResponseEntity<Image> response =
-                            restTemplate.exchange(MAIN_DOMAIN_NAME+GET_IMAGE_URL.replace("{recipeId}",
+                            restTemplate.exchange(MAIN_DOMAIN_NAME + GET_IMAGE_URL.replace("{recipeId}",
                                     String.valueOf(params[0])),
                                     HttpMethod.GET, null, new ParameterizedTypeReference<Image>() {
                                     });
@@ -203,9 +218,92 @@ public class RecipesAdapter extends CursorRecyclerViewAdapter {
                 imageId = image.getId();
                 imageExtension = image.getExtension();
                 GlideApp.with(mContext)
-                        .load("http://escaws.s3.amazonaws.com/Image storage directory/"+image.getId()+image.getExtension())
+                        .load("http://escaws.s3.amazonaws.com/Image storage directory/" + image.getId() + image.getExtension())
                         .fitCenter()
                         .into(recipeImageView);
+            }
+        }
+
+        private class GetRecipeLikes extends AsyncTask<Long, List<LikeRelationship>, List<LikeRelationship>> {
+
+            @Override
+            protected void onPreExecute() {
+                super.onPreExecute();
+            }
+
+            @Override
+            protected List<LikeRelationship> doInBackground(Long[] params) {
+
+                Cursor likesCursor = mContext.getContentResolver().query(RecipesContentProvider.CONTENT_URI_LIKES,
+                        null, LikesTableDefinition.RECIPE_ID_COLUMN + " = ? ", new String[]{String.valueOf(params[0])},
+                        null);
+
+                DatabaseUtils.dumpCursorToString(likesCursor);
+
+                if (likesCursor != null && likesCursor.getCount() > 0) {
+                    List<LikeRelationship> likes = new ArrayList<>();
+                    while (likesCursor.moveToNext()) {
+                        Cursor cookCursor = mContext.getContentResolver().query(
+                                Uri.parse(RecipesContentProvider.CONTENT_URI_COOKS + "/" +
+                                        likesCursor.getLong(likesCursor.getColumnIndex(LikesTableDefinition.COOK_ID_COLUMN))),
+                                null, null, null,
+                                null);
+                        if (cookCursor != null && cookCursor.getCount() > 0) {
+
+                            cookCursor.moveToNext();
+                            Cook cook = new Cook(likesCursor.getLong(likesCursor.getColumnIndex(LikesTableDefinition.COOK_ID_COLUMN)),
+                                    cookCursor.getString(cookCursor.getColumnIndex(CooksTableDefinition.USERNAME_COLUMN)),
+                                    null, null, null, null, null);
+                            cookCursor.close();
+
+                            LikeRelationship like = new LikeRelationship(
+                                    likesCursor.getLong(likesCursor.getColumnIndex(LikesTableDefinition.ID_COLUMN)),
+                                    null, cook);
+
+                            likes.add(like);
+                        }
+                    }
+
+
+                    likesCursor.close();
+                    return likes;
+                } else {
+                    RestTemplate restTemplate = new RestTemplate();
+                    ResponseEntity<List<LikeRelationship>> response =
+                            restTemplate.exchange(MAIN_DOMAIN_NAME + GET_LIKES_URL.replace("{recipeId}",
+                                    String.valueOf(params[0])),
+                                    HttpMethod.GET, null, new ParameterizedTypeReference<List<LikeRelationship>>() {
+                                    });
+                    if (response != null) {
+                        for (LikeRelationship like : response.getBody()) {
+                            ContentValues contentValues = new ContentValues();
+                            contentValues.put(ImagesTableDefinition.ID_COLUMN, like.getId());
+                            contentValues.put(ImagesTableDefinition.COOK_ID_COLUMN, like.getId());
+                            contentValues.put(ImagesTableDefinition.RECIPE_ID_COLUMN, String.valueOf(params[0]));
+
+                            mContext.getContentResolver().insert(RecipesContentProvider.CONTENT_URI_LIKES, contentValues);
+                        }
+                    }
+                    return response != null ? response.getBody() : null;
+                }
+            }
+
+            @Override
+            protected void onPostExecute(List<LikeRelationship> likes) {
+                super.onPostExecute(likes);
+                likeButton.setChecked(false);
+                if(likes != null && likes.size() > 0) {
+                    for (LikeRelationship like : likes) {
+                        if (like.getCook().getUsername().equalsIgnoreCase(Utils.CONNECTED_COOK)) {
+                            likeButton.setChecked(true);
+                        }
+                    }
+                    numberOfLikes.setText(String.valueOf(likes.size()));
+                }
+                else{
+                    numberOfLikes.setText(String.valueOf(0));
+                }
+
             }
         }
     }

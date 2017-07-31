@@ -19,9 +19,11 @@ import java.security.InvalidKeyException;
 import me.esca.dbRelated.cook.tableUtils.CooksTableDefinition;
 import me.esca.dbRelated.RecipesDatabaseHelper;
 import me.esca.dbRelated.image.tableUtils.ImagesTableDefinition;
+import me.esca.dbRelated.likeRelationship.tableUtils.LikesTableDefinition;
 import me.esca.dbRelated.recipe.tableUtils.RecipesTableDefinition;
 import me.esca.model.Cook;
 import me.esca.model.Image;
+import me.esca.model.LikeRelationship;
 import me.esca.model.Recipe;
 
 /**
@@ -40,16 +42,20 @@ public class RecipesContentProvider extends ContentProvider {
     private static final int COOK_ID = 21;
     private static final int IMAGES = 12;
     private static final int IMAGE_ID = 22;
+    private static final int LIKES = 13;
+    private static final int LIKES_ID = 23;
 
     private static final String AUTHORITY_RECIPES = "me.esca.recipes.contentprovider";
 
     private static final String BASE_PATH_RECIPES = "recipes";
     private static final String BASE_PATH_COOKS = "cooks";
     private static final String BASE_PATH_IMAGES = "images";
+    private static final String BASE_PATH_LIKES = "likes";
 
     public static final Uri CONTENT_URI_RECIPES = Uri.parse("content://" + AUTHORITY_RECIPES + "/" + BASE_PATH_RECIPES);
     public static final Uri CONTENT_URI_COOKS = Uri.parse("content://" + AUTHORITY_RECIPES + "/" + BASE_PATH_COOKS);
     public static final Uri CONTENT_URI_IMAGES = Uri.parse("content://" + AUTHORITY_RECIPES + "/" + BASE_PATH_IMAGES);
+    public static final Uri CONTENT_URI_LIKES = Uri.parse("content://" + AUTHORITY_RECIPES + "/" + BASE_PATH_LIKES);
 
 //    public static final String CONTENT_TYPE_RECIPES = ContentResolver.CURSOR_DIR_BASE_TYPE + "/recipes";
 //    public static final String CONTENT_ITEM_TYPE_RECIPES = ContentResolver.CURSOR_ITEM_BASE_TYPE + "/recipe";
@@ -67,6 +73,8 @@ public class RecipesContentProvider extends ContentProvider {
         sURIMatcher.addURI(AUTHORITY_RECIPES, BASE_PATH_COOKS + "/#", COOK_ID);
         sURIMatcher.addURI(AUTHORITY_RECIPES, BASE_PATH_IMAGES, IMAGES);
         sURIMatcher.addURI(AUTHORITY_RECIPES, BASE_PATH_IMAGES + "/#", IMAGE_ID);
+        sURIMatcher.addURI(AUTHORITY_RECIPES, BASE_PATH_LIKES, LIKES);
+        sURIMatcher.addURI(AUTHORITY_RECIPES, BASE_PATH_LIKES + "/#", LIKES_ID);
     }
 
     @Override
@@ -91,7 +99,10 @@ public class RecipesContentProvider extends ContentProvider {
                 queryBuilder.setTables(CooksTableDefinition.TABLE_NAME);
                 break;
             case IMAGES:
-                queryBuilder.setTables(me.esca.dbRelated.image.tableUtils.ImagesTableDefinition.TABLE_NAME);
+                queryBuilder.setTables(ImagesTableDefinition.TABLE_NAME);
+                break;
+            case LIKES:
+                queryBuilder.setTables(LikesTableDefinition.TABLE_NAME);
                 break;
             case RECIPE_ID:
                 queryBuilder.setTables(RecipesTableDefinition.TABLE_NAME);
@@ -102,8 +113,12 @@ public class RecipesContentProvider extends ContentProvider {
                 queryBuilder.appendWhere(CooksTableDefinition.ID_COLUMN + "=" + uri.getLastPathSegment());
                 break;
             case IMAGE_ID:
-                queryBuilder.setTables(me.esca.dbRelated.image.tableUtils.ImagesTableDefinition.TABLE_NAME);
-                queryBuilder.appendWhere(me.esca.dbRelated.image.tableUtils.ImagesTableDefinition.ID_COLUMN + "=" + uri.getLastPathSegment());
+                queryBuilder.setTables(ImagesTableDefinition.TABLE_NAME);
+                queryBuilder.appendWhere(ImagesTableDefinition.ID_COLUMN + "=" + uri.getLastPathSegment());
+                break;
+            case LIKES_ID:
+                queryBuilder.setTables(LikesTableDefinition.TABLE_NAME);
+                queryBuilder.appendWhere(LikesTableDefinition.ID_COLUMN + "=" + uri.getLastPathSegment());
                 break;
             default:
                 throw new IllegalArgumentException("Unknown URI: " + uri);
@@ -138,6 +153,9 @@ public class RecipesContentProvider extends ContentProvider {
             case IMAGES:
                 id = sqlDB.insert(ImagesTableDefinition.TABLE_NAME, null, values);
                 break;
+            case LIKES:
+                id = sqlDB.insert(LikesTableDefinition.TABLE_NAME, null, values);
+                break;
             default:
                 throw new IllegalArgumentException("Unknown URI: " + uri);
         }
@@ -166,7 +184,10 @@ public class RecipesContentProvider extends ContentProvider {
                             id = sqlDB.insert(CooksTableDefinition.TABLE_NAME, null, value);
                             break;
                         case IMAGES:
-                            id = sqlDB.insert(me.esca.dbRelated.image.tableUtils.ImagesTableDefinition.TABLE_NAME, null, value);
+                            id = sqlDB.insert(ImagesTableDefinition.TABLE_NAME, null, value);
+                            break;
+                        case LIKES:
+                            id = sqlDB.insert(LikesTableDefinition.TABLE_NAME, null, value);
                             break;
                         default:
                             throw new IllegalArgumentException("Unknown URI: " + uri);
@@ -205,7 +226,11 @@ public class RecipesContentProvider extends ContentProvider {
                         selectionArgs);
                 break;
             case IMAGES:
-                rowsDeleted = sqlDB.delete(me.esca.dbRelated.image.tableUtils.ImagesTableDefinition.TABLE_NAME, selection,
+                rowsDeleted = sqlDB.delete(ImagesTableDefinition.TABLE_NAME, selection,
+                        selectionArgs);
+                break;
+            case LIKES:
+                rowsDeleted = sqlDB.delete(LikesTableDefinition.TABLE_NAME, selection,
                         selectionArgs);
                 break;
             //TODO **********Could be optimized************
@@ -243,13 +268,28 @@ public class RecipesContentProvider extends ContentProvider {
                 id = uri.getLastPathSegment();
                 if (TextUtils.isEmpty(selection)) {
                     rowsDeleted = sqlDB.delete(
-                            me.esca.dbRelated.image.tableUtils.ImagesTableDefinition.TABLE_NAME,
-                            me.esca.dbRelated.image.tableUtils.ImagesTableDefinition.ID_COLUMN + "=" + id,
+                            ImagesTableDefinition.TABLE_NAME,
+                            ImagesTableDefinition.ID_COLUMN + "=" + id,
                             null);
                 } else {
                     rowsDeleted = sqlDB.delete(
-                            me.esca.dbRelated.image.tableUtils.ImagesTableDefinition.TABLE_NAME,
-                            me.esca.dbRelated.image.tableUtils.ImagesTableDefinition.ID_COLUMN + "=" + id
+                            ImagesTableDefinition.TABLE_NAME,
+                            ImagesTableDefinition.ID_COLUMN + "=" + id
+                                    + " and " + selection,
+                            selectionArgs);
+                }
+                break;
+            case LIKES_ID:
+                id = uri.getLastPathSegment();
+                if (TextUtils.isEmpty(selection)) {
+                    rowsDeleted = sqlDB.delete(
+                            LikesTableDefinition.TABLE_NAME,
+                            LikesTableDefinition.ID_COLUMN + "=" + id,
+                            null);
+                } else {
+                    rowsDeleted = sqlDB.delete(
+                            LikesTableDefinition.TABLE_NAME,
+                            LikesTableDefinition.ID_COLUMN + "=" + id
                                     + " and " + selection,
                             selectionArgs);
                 }
@@ -283,7 +323,13 @@ public class RecipesContentProvider extends ContentProvider {
                         selectionArgs);
                 break;
             case IMAGES:
-                rowsUpdated = sqlDB.update(me.esca.dbRelated.image.tableUtils.ImagesTableDefinition.TABLE_NAME,
+                rowsUpdated = sqlDB.update(ImagesTableDefinition.TABLE_NAME,
+                        values,
+                        selection,
+                        selectionArgs);
+                break;
+            case LIKES:
+                rowsUpdated = sqlDB.update(LikesTableDefinition.TABLE_NAME,
                         values,
                         selection,
                         selectionArgs);
@@ -323,14 +369,30 @@ public class RecipesContentProvider extends ContentProvider {
             case IMAGE_ID:
                 id = uri.getLastPathSegment();
                 if (TextUtils.isEmpty(selection)) {
-                    rowsUpdated = sqlDB.update(me.esca.dbRelated.image.tableUtils.ImagesTableDefinition.TABLE_NAME,
+                    rowsUpdated = sqlDB.update(ImagesTableDefinition.TABLE_NAME,
                             values,
-                            me.esca.dbRelated.image.tableUtils.ImagesTableDefinition.ID_COLUMN + "=" + id,
+                            ImagesTableDefinition.ID_COLUMN + "=" + id,
                             null);
                 } else {
-                    rowsUpdated = sqlDB.update(me.esca.dbRelated.image.tableUtils.ImagesTableDefinition.TABLE_NAME,
+                    rowsUpdated = sqlDB.update(ImagesTableDefinition.TABLE_NAME,
                             values,
-                            me.esca.dbRelated.image.tableUtils.ImagesTableDefinition.ID_COLUMN + "=" + id
+                            ImagesTableDefinition.ID_COLUMN + "=" + id
+                                    + " and "
+                                    + selection,
+                            selectionArgs);
+                }
+                break;
+            case LIKES_ID:
+                id = uri.getLastPathSegment();
+                if (TextUtils.isEmpty(selection)) {
+                    rowsUpdated = sqlDB.update(LikesTableDefinition.TABLE_NAME,
+                            values,
+                            LikesTableDefinition.ID_COLUMN + "=" + id,
+                            null);
+                } else {
+                    rowsUpdated = sqlDB.update(LikesTableDefinition.TABLE_NAME,
+                            values,
+                            LikesTableDefinition.ID_COLUMN + "=" + id
                                     + " and "
                                     + selection,
                             selectionArgs);
@@ -419,6 +481,21 @@ public class RecipesContentProvider extends ContentProvider {
                     }
                 }
 
+                if (method.equals("saveOrUpdateLike")) {
+                    LikeRelationship like = (LikeRelationship) extras.getSerializable("like");
+                    if (like != null) {
+                        ContentValues imageEntityValues = new ContentValues();
+                        imageEntityValues.put(LikesTableDefinition.ID_COLUMN, like.getId());
+                        imageEntityValues.put(LikesTableDefinition.RECIPE_ID_COLUMN, like.getRecipe().getId());
+                        imageEntityValues.put(LikesTableDefinition.COOK_ID_COLUMN, like.getCook().getId());
+                        try {
+                            saveOrUpdate(imageEntityValues, uri);
+                        } catch (InvalidKeyException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+
                 if (method.equals("bulkSaveOrUpdateRecipe")) {
 
                     ContentValues[] recipes = (ContentValues[]) extras.getSerializable("recipes");
@@ -447,8 +524,12 @@ public class RecipesContentProvider extends ContentProvider {
                 baseUri = BASE_PATH_COOKS;
                 break;
             case IMAGES:
-                idColumn = me.esca.dbRelated.image.tableUtils.ImagesTableDefinition.ID_COLUMN;
+                idColumn = ImagesTableDefinition.ID_COLUMN;
                 baseUri = BASE_PATH_IMAGES;
+                break;
+            case LIKES:
+                idColumn = LikesTableDefinition.ID_COLUMN;
+                baseUri = BASE_PATH_LIKES;
                 break;
         }
 
