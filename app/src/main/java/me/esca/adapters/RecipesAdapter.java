@@ -16,6 +16,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.varunest.sparkbutton.SparkButton;
+import com.varunest.sparkbutton.SparkEventListener;
 
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
@@ -121,6 +122,31 @@ public class RecipesAdapter extends CursorRecyclerViewAdapter {
             followTextView = (TextView) view.findViewById(R.id.follow_text_view);
             likeButton = (SparkButton) view.findViewById(R.id.likeButton);
             numberOfLikes = (TextView) view.findViewById(R.id.number_of_likes);
+
+
+            likeButton.setEventListener(new SparkEventListener() {
+                @Override
+                public void onEvent(ImageView button, boolean buttonState) {
+                    int likesNbr = Integer.parseInt(numberOfLikes.getText().toString());
+                    if (buttonState) {
+                        likesNbr++;
+                        numberOfLikes.setText(String.valueOf(likesNbr));
+                    } else {
+                        if(likesNbr > 0) likesNbr--;
+                        numberOfLikes.setText(String.valueOf(likesNbr));
+                    }
+                }
+
+                @Override
+                public void onEventAnimationEnd(ImageView button, boolean buttonState) {
+
+                }
+
+                @Override
+                public void onEventAnimationStart(ImageView button, boolean buttonState) {
+
+                }
+            });
         }
 
         public void setData(Cursor c) {
@@ -278,7 +304,7 @@ public class RecipesAdapter extends CursorRecyclerViewAdapter {
                         for (LikeRelationship like : response.getBody()) {
                             ContentValues contentValues = new ContentValues();
                             contentValues.put(ImagesTableDefinition.ID_COLUMN, like.getId());
-                            contentValues.put(ImagesTableDefinition.COOK_ID_COLUMN, like.getId());
+                            contentValues.put(ImagesTableDefinition.COOK_ID_COLUMN, like.getCook().getId());
                             contentValues.put(ImagesTableDefinition.RECIPE_ID_COLUMN, String.valueOf(params[0]));
 
                             mContext.getContentResolver().insert(RecipesContentProvider.CONTENT_URI_LIKES, contentValues);
@@ -291,8 +317,8 @@ public class RecipesAdapter extends CursorRecyclerViewAdapter {
             @Override
             protected void onPostExecute(List<LikeRelationship> likes) {
                 super.onPostExecute(likes);
-                likeButton.setChecked(false);
                 if(likes != null && likes.size() > 0) {
+                    likeButton.setChecked(false);
                     for (LikeRelationship like : likes) {
                         if (like.getCook().getUsername().equalsIgnoreCase(Utils.CONNECTED_COOK)) {
                             likeButton.setChecked(true);
@@ -302,6 +328,7 @@ public class RecipesAdapter extends CursorRecyclerViewAdapter {
                 }
                 else{
                     numberOfLikes.setText(String.valueOf(0));
+                    likeButton.setChecked(false);
                 }
 
             }

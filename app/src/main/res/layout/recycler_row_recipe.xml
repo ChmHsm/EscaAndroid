@@ -10,7 +10,9 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:clipChildren="false"
+        android:clipToPadding="false">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -70,13 +72,17 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:clipChildren="false"
+            android:clipToPadding="false">
 
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:layout_marginStart="5dp">
+                android:layout_marginStart="5dp"
+                android:clipChildren="false"
+                android:clipToPadding="false">
 
                 <com.varunest.sparkbutton.SparkButton
                     android:id="@+id/likeButton"
@@ -85,8 +91,8 @@
                     app:sparkbutton_activeImage="@drawable/bottom_bar_favorite_active"
                     app:sparkbutton_inActiveImage="@drawable/bottom_bar_favorite"
                     app:sparkbutton_iconSize="30dp"
-                    app:sparkbutton_primaryColor="@color/red"
-                    app:sparkbutton_secondaryColor="@color/colorAccent"
+                    app:sparkbutton_primaryColor="@color/likeButtonDark"
+                    app:sparkbutton_secondaryColor="@color/accent_material_light"
                     app:sparkbutton_animationSpeed="0.9"/>
 
                 <TextView
@@ -94,8 +100,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="0dp"
                     android:layout_gravity="center"
-                    android:layout_weight="1"
-                    android:text="@string/random_number" />
+                    android:layout_weight="1"/>
 
 
             </LinearLayout>
@@ -146,8 +151,9 @@
 
             <ImageView
                 android:id="@+id/imageView4"
-                android:layout_width="30dp"
-                android:layout_height="30dp"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:padding="10dp"
                 android:scaleType="fitXY"
                 android:layout_marginEnd="5dp"
                 android:src="@drawable/action_share" />
