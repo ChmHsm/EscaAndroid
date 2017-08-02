@@ -108,6 +108,7 @@ public class RecipesAdapter extends CursorRecyclerViewAdapter {
         private TextView followTextView;
         public Long id;
         public Long imageId;
+        public long likeId;
         public String imageExtension;
         public SparkButton likeButton;
         public TextView numberOfLikes;
@@ -131,6 +132,24 @@ public class RecipesAdapter extends CursorRecyclerViewAdapter {
                     if (buttonState) {
                         likesNbr++;
                         numberOfLikes.setText(String.valueOf(likesNbr));
+                        if(likeId == 0){
+                            Cursor cookCursor = mContext.getContentResolver().query(
+                                    RecipesContentProvider.CONTENT_URI_COOKS,
+                                    null, CooksTableDefinition.USERNAME_COLUMN + " = ? ",
+                                    new String[]{Utils.CONNECTED_COOK},
+                                    null);
+                            if(cookCursor != null && cookCursor.getCount() > 0){
+                                cookCursor.moveToNext();
+                                ContentValues likeContentValues = new ContentValues();
+                                likeContentValues.put(LikesTableDefinition.ID_COLUMN, likeId);
+                                likeContentValues.put(LikesTableDefinition.COOK_ID_COLUMN, cookCursor.
+                                getLong(cookCursor.getColumnIndex(CooksTableDefinition.ID_COLUMN)));
+                                likeContentValues.put(LikesTableDefinition.RECIPE_ID_COLUMN, id);
+                                mContext.getContentResolver().insert(
+                                        RecipesContentProvider.CONTENT_URI_LIKES,
+                                        likeContentValues);
+                            }
+                        }
                     } else {
                         if(likesNbr > 0) likesNbr--;
                         numberOfLikes.setText(String.valueOf(likesNbr));
@@ -319,8 +338,10 @@ public class RecipesAdapter extends CursorRecyclerViewAdapter {
                 super.onPostExecute(likes);
                 if(likes != null && likes.size() > 0) {
                     likeButton.setChecked(false);
+                    likeId = 0;
                     for (LikeRelationship like : likes) {
                         if (like.getCook().getUsername().equalsIgnoreCase(Utils.CONNECTED_COOK)) {
+                            likeId = like.getId();
                             likeButton.setChecked(true);
                         }
                     }
