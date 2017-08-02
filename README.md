@@ -8,7 +8,7 @@ Esca is still in development, work so far:<br/>
 
 The Food Feed | Single Recipe| New recipe
 ------------ | -------------| -------------
-<img src="https://user-images.githubusercontent.com/12183061/28490788-e67e98ea-6ee2-11e7-9821-71641666a68b.png"/> | <img src="https://user-images.githubusercontent.com/12183061/28490789-e7e6128a-6ee2-11e7-883f-7a834ae14df3.png"/> | <img src="https://user-images.githubusercontent.com/12183061/28247695-e0ca5e04-6a35-11e7-940b-58f8f0de2c78.png"/>
+<img src="https://user-images.githubusercontent.com/12183061/28842582-74a1e3fc-76fe-11e7-8d52-de33fc4225b6.png"/> | <img src="https://user-images.githubusercontent.com/12183061/28490789-e7e6128a-6ee2-11e7-883f-7a834ae14df3.png"/> | <img src="https://user-images.githubusercontent.com/12183061/28247695-e0ca5e04-6a35-11e7-940b-58f8f0de2c78.png"/>
 A feed that contains recipes <br/>added recently to the app  | Contains the details <br/>for a given recipe | Activity for adding a new recipe
 Status: Almost done  | Status: Almost done | Done
 
