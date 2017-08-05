@@ -30,6 +30,7 @@ import me.esca.dbRelated.contentProvider.RecipesContentProvider;
 import me.esca.dbRelated.image.tableUtils.ImagesTableDefinition;
 import me.esca.model.Image;
 import me.esca.model.Recipe;
+import me.esca.utils.Connectivity;
 import me.esca.utils.glide.GlideApp;
 import me.esca.utils.searchViewUtils.data.SearchResultsEntity;
 
@@ -171,7 +172,9 @@ public class RecipesSearchResultsAdapter extends RecyclerView.Adapter<RecipesSea
             holder.cookName.setVisibility(View.VISIBLE);
             holder.cookedBy.setVisibility(View.VISIBLE);
             holder.cookName.setText(searchResultsEntity.getCookName());
-            holder. new GetRecipeImage().execute(searchResultsEntity.getId());
+            if(Connectivity.isNetworkAvailable(viewContext)) {
+                holder. new GetRecipeImage().execute(searchResultsEntity.getId());
+            }
         }
         else if(searchResultsEntity.getEntityType() == 2){
             holder.mColorName.setTextColor(viewContext.getResources().getColor(R.color.black, null));

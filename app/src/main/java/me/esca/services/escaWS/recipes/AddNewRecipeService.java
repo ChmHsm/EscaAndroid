@@ -43,6 +43,7 @@ import me.esca.dbRelated.image.tableUtils.ImagesTableDefinition;
 import me.esca.model.Image;
 import me.esca.model.Recipe;
 import me.esca.utils.Accessors;
+import me.esca.utils.Connectivity;
 import me.esca.utils.ImageProcessing.Utils;
 import me.esca.utils.security.cryptography.Encryption;
 
@@ -71,7 +72,10 @@ public class AddNewRecipeService extends Service {
         this.imageToBeAdded =  (Image) intent.getSerializableExtra("imageToBeAdded");
         this.imageUrl = intent.getStringExtra("recipeImageUrl");
         this.imageUri = Uri.parse(intent.getStringExtra("recipeImageUrl")) ;
-        new AddNewRecipe().execute();
+        if(Connectivity.isNetworkAvailable(this)) {
+            new AddNewRecipe().execute();
+        }
+
         return Service.START_NOT_STICKY;
     }
 
@@ -103,8 +107,13 @@ public class AddNewRecipeService extends Service {
             list.add(new MappingJackson2HttpMessageConverter());
             restTemplate.setMessageConverters(list);
 
-            resultLocation = restTemplate.postForLocation(MAIN_DOMAIN_NAME+ADD_RECIPE_URL.replace("{username}",
-                    loggedUsername), recipeToBeAdded, Recipe.class);
+            try {
+                resultLocation = restTemplate.postForLocation(MAIN_DOMAIN_NAME+ADD_RECIPE_URL.replace("{username}",
+                        loggedUsername), recipeToBeAdded, Recipe.class);
+            } catch (Exception e){
+                return null;
+            }
+
 
             Long id = Long.parseLong(resultLocation.getPath().substring(resultLocation.getPath().lastIndexOf("/") + 1));
             String imagePath = Utils.getPathFromUri(getApplicationContext(), imageUri);
@@ -161,8 +170,13 @@ public class AddNewRecipeService extends Service {
         @Override
         protected void onPostExecute(String s) {
             super.onPostExecute(s);
+
             Intent intent = new Intent("ServiceIsDone");
-            intent.putExtra("resultLocation", resultLocation.toString());
+            if(s != null){
+                intent.putExtra("resultLocation", resultLocation.toString());
+            }else{
+                intent.putExtra("resultLocation", "not added");
+            }
             sendBroadcast(intent);
             stopSelf();
         }

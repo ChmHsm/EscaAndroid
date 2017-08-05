@@ -43,7 +43,12 @@ public class FetchImageByRecipeId extends Service {
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
-        new FetchImageByRecipeId.GetRecipeImage().execute(recipeId);
+        if(Connectivity.isNetworkAvailable(context)) {
+            new GetRecipeImage().execute(recipeId);
+        }
+        else{
+            //TODO notify not connected
+        }
         return mBinder;
     }
 

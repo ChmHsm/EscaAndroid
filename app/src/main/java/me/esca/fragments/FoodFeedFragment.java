@@ -2,6 +2,7 @@ package me.esca.fragments;
 
 import android.app.Fragment;
 import android.app.LoaderManager;
+import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.CursorLoader;
@@ -42,6 +43,7 @@ public class FoodFeedFragment extends Fragment implements LoaderManager.LoaderCa
     private RecyclerView mRecyclerView;
     private FloatingActionButton addRecipeButton;
     private DataUpdateReceiver dataUpdateReceiver;
+    private ProgressDialog progressDialog;
 
     @Override
     public void onResume() {
@@ -96,7 +98,12 @@ public class FoodFeedFragment extends Fragment implements LoaderManager.LoaderCa
     }
 
     private void callRetrieveAllRecipesService(){
+
         if(Connectivity.isNetworkAvailable(getActivity())) {
+            progressDialog = new ProgressDialog(getActivity());
+            progressDialog.setTitle("Loading");
+            progressDialog.setMessage("Loading");
+            progressDialog.show();
             Intent intent = new Intent(getActivity(), RetrieveAllRecipes.class);
             getActivity().startService(intent);
         }
@@ -133,6 +140,10 @@ public class FoodFeedFragment extends Fragment implements LoaderManager.LoaderCa
                 fillMx(data, mx);
 
                 ((RecipesAdapter) mRecyclerView.getAdapter()).swapCursor(mx);
+                if(progressDialog != null){
+                    progressDialog.hide();
+                    progressDialog.dismiss();
+                }
 
                 break;
             default:

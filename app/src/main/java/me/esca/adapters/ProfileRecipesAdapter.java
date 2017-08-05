@@ -23,6 +23,7 @@ import me.esca.dbRelated.contentProvider.RecipesContentProvider;
 import me.esca.dbRelated.image.tableUtils.ImagesTableDefinition;
 import me.esca.dbRelated.recipe.tableUtils.RecipesTableDefinition;
 import me.esca.model.Image;
+import me.esca.utils.Connectivity;
 import me.esca.utils.CursorRecyclerViewAdapter;
 import me.esca.utils.glide.GlideApp;
 
@@ -105,8 +106,12 @@ public class ProfileRecipesAdapter extends CursorRecyclerViewAdapter {
             recipeTitle.setText(c.getString(c.getColumnIndex(RecipesTableDefinition.TITLE_COLUMN)));
 
             recipeId = c.getLong(c.getColumnIndex(RecipesTableDefinition.ID_COLUMN));
-
-            new GetRecipeImage().execute(recipeId);
+            if(Connectivity.isNetworkAvailable(mContext)) {
+                new GetRecipeImage().execute(recipeId);
+            }
+            else{
+                //TODO Notify not connected
+            }
         }
 
         private class GetRecipeImage extends AsyncTask<Long, Image, Image> {

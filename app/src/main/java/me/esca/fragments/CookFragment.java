@@ -6,6 +6,7 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
 import android.app.Fragment;
+import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
@@ -41,6 +42,7 @@ import me.esca.R;
 import me.esca.model.Image;
 import me.esca.model.Recipe;
 import me.esca.services.escaWS.recipes.AddNewRecipeService;
+import me.esca.utils.Connectivity;
 import me.esca.utils.ImageProcessing.Utils;
 
 import static android.app.Activity.RESULT_OK;
@@ -73,6 +75,7 @@ public class CookFragment extends Fragment implements ServiceConnection {
             Manifest.permission.READ_EXTERNAL_STORAGE
     };
     private String messageBody = "";
+    private ProgressDialog progressDialog;
 
 
     @Override
@@ -132,28 +135,37 @@ public class CookFragment extends Fragment implements ServiceConnection {
         addRecipeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (dataValidation()) {
-                    recipeToBeAdded = new Recipe(recipeTitleEditText.getText().toString().trim(),
-                            difficultyRating,
-                            Integer.parseInt(recipePreparationTimeEditText.getText().toString().trim()),
-                            Double.valueOf(recipePreparationCostEditText.getText().toString().trim()),
-                            recipeIngredientsEditText.getText().toString().trim(),
-                            recipeInstructionsEditText.getText().toString().trim(), null, null, null, null);
-                    String realImagePath = Utils.getPathFromUri(getActivity(), imageUri);
-                    String imageExtension = realImagePath.substring(realImagePath.lastIndexOf("."));
-                    imageToBeAdded = new Image(null,
-                            imageUri.getPath()
-                                    .substring(0, imageUri.getPath().length() - imageUri.getPath().indexOf(".") - 1),
-                            imageUri.getPath(),
-                            null, null, true, null, recipeToBeAdded, imageExtension);
-                    addNewRecipeService = new AddNewRecipeService();
-                    Intent service = new Intent(getActivity().getApplicationContext(), AddNewRecipeService.class);
-                    service.putExtra("recipeToBeAdded", recipeToBeAdded);
-                    service.putExtra("imageToBeAdded", imageToBeAdded);
-                    service.putExtra("recipeImageUrl", imageUri.toString());
-                    getActivity().getApplicationContext().startService(service);
-                } else {
-                    Toast.makeText(getActivity(), messageBody, Toast.LENGTH_SHORT).show();
+                if(Connectivity.isNetworkAvailable(getActivity())) {
+                    if (dataValidation()) {
+                        progressDialog = new ProgressDialog(getActivity());
+                        progressDialog.setTitle("Loading");
+                        progressDialog.setMessage("Loading");
+                        progressDialog.show();
+                        recipeToBeAdded = new Recipe(recipeTitleEditText.getText().toString().trim(),
+                                difficultyRating,
+                                Integer.parseInt(recipePreparationTimeEditText.getText().toString().trim()),
+                                Double.valueOf(recipePreparationCostEditText.getText().toString().trim()),
+                                recipeIngredientsEditText.getText().toString().trim(),
+                                recipeInstructionsEditText.getText().toString().trim(), null, null, null, null);
+                        String realImagePath = Utils.getPathFromUri(getActivity(), imageUri);
+                        String imageExtension = realImagePath.substring(realImagePath.lastIndexOf("."));
+                        imageToBeAdded = new Image(null,
+                                imageUri.getPath()
+                                        .substring(0, imageUri.getPath().length() - imageUri.getPath().indexOf(".") - 1),
+                                imageUri.getPath(),
+                                null, null, true, null, recipeToBeAdded, imageExtension);
+                        addNewRecipeService = new AddNewRecipeService();
+                        Intent service = new Intent(getActivity().getApplicationContext(), AddNewRecipeService.class);
+                        service.putExtra("recipeToBeAdded", recipeToBeAdded);
+                        service.putExtra("imageToBeAdded", imageToBeAdded);
+                        service.putExtra("recipeImageUrl", imageUri.toString());
+                        getActivity().getApplicationContext().startService(service);
+                    } else {
+                        Toast.makeText(getActivity(), messageBody, Toast.LENGTH_SHORT).show();
+                    }
+                }
+                else{
+                    //TODO notify not connected
                 }
             }
         });
@@ -252,9 +264,10 @@ public class CookFragment extends Fragment implements ServiceConnection {
                 String resultLocation = intent.getStringExtra("resultLocation");
                 Toast.makeText(getActivity(), "Recipe was added in "
                         + resultLocation, Toast.LENGTH_SHORT).show();
-            }
-            if (intent.getAction().equals("ImageServiceIsDone")) {
-                Toast.makeText(getActivity(), "Image was uploaded ", Toast.LENGTH_SHORT).show();
+                if(progressDialog != null){
+                    progressDialog.hide();
+                    progressDialog.dismiss();
+                }
             }
         }
     }
@@ -264,16 +277,10 @@ public class CookFragment extends Fragment implements ServiceConnection {
                 Manifest.permission.READ_EXTERNAL_STORAGE)
                 != PackageManager.PERMISSION_GRANTED) {
 
-
-            // No explanation needed, we can request the permission.
-
             requestPermissions(
                     new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
                     REQUEST_EXTERNAL_STORAGE);
 
-            // MY_PERMISSIONS_REQUEST_READ_CONTACTS is an
-            // app-defined int constant. The callback method gets the
-            // result of the request.
         } else {
             Intent photoPickerIntent = new Intent(Intent.ACTION_PICK);
             photoPickerIntent.setType("image/*");
@@ -286,7 +293,6 @@ public class CookFragment extends Fragment implements ServiceConnection {
                                            @NonNull String permissions[], @NonNull int[] grantResults) {
         switch (requestCode) {
             case REQUEST_EXTERNAL_STORAGE: {
-                // If request is cancelled, the result arrays are empty.
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
 
@@ -295,9 +301,6 @@ public class CookFragment extends Fragment implements ServiceConnection {
                     startActivityForResult(photoPickerIntent, RESULT_LOAD_IMG);
                 }
             }
-
-            // other 'case' lines to check for other
-            // permissions this app might request
         }
     }
 }

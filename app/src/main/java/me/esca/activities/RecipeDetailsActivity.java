@@ -43,6 +43,7 @@ import me.esca.model.Cook;
 import me.esca.model.LikeRelationship;
 import me.esca.model.Recipe;
 import me.esca.services.escaWS.Utils;
+import me.esca.utils.Connectivity;
 import me.esca.utils.glide.GlideApp;
 
 import static me.esca.adapters.RecipesAdapter.REQUEST_CODE;
@@ -92,12 +93,14 @@ public class RecipeDetailsActivity extends Activity {
             likeButton.setEventListener(new SparkEventListener() {
                 @Override
                 public void onEvent(ImageView button, boolean buttonState) {
-                    likeStateChanged = initialLikeState != buttonState;
-                    if (buttonState) {
-                        new AddRecipeLike().execute(recipeId);
-                    } else {
-                        if (likeId > 0) {
-                            new DeleteRecipeLike().execute(likeId);
+                    if (Connectivity.isNetworkAvailable(RecipeDetailsActivity.this)) {
+                        likeStateChanged = initialLikeState != buttonState;
+                        if (buttonState) {
+                            new AddRecipeLike().execute(recipeId);
+                        } else {
+                            if (likeId > 0) {
+                                new DeleteRecipeLike().execute(likeId);
+                            }
                         }
                     }
                 }
@@ -113,11 +116,13 @@ public class RecipeDetailsActivity extends Activity {
                 }
             });
 
-            GlideApp.with(this)
-                    .load("http://escaws.s3.amazonaws.com/Image storage directory/" + imageId + imageExtension)
-                    .placeholder(getDrawable(R.drawable.recipe_image_placeholder))
-                    .fitCenter()
-                    .into(recipeDetailImageView);
+            if (imageId > 0) {
+                GlideApp.with(this)
+                        .load("http://escaws.s3.amazonaws.com/Image storage directory/" + imageId + imageExtension)
+                        .placeholder(getDrawable(R.drawable.recipe_image_placeholder))
+                        .fitCenter()
+                        .into(recipeDetailImageView);
+            }
 
             Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
             setActionBar(toolbar);
@@ -179,7 +184,10 @@ public class RecipeDetailsActivity extends Activity {
                         "An error occurred while retrieving the requested recipe",
                         Toast.LENGTH_LONG).show();
             }
+
             new GetRecipeLikes().execute(imageId);
+
+
         } else {
             Toast.makeText(RecipeDetailsActivity.this,
                     "An error occurred while retrieving the requested recipe",
@@ -246,7 +254,7 @@ public class RecipeDetailsActivity extends Activity {
 
                 likesCursor.close();
                 return likes;
-            } else {
+            } else if (Connectivity.isNetworkAvailable(RecipeDetailsActivity.this)) {
                 RestTemplate restTemplate = new RestTemplate();
                 ResponseEntity<List<LikeRelationship>> response =
                         restTemplate.exchange(MAIN_DOMAIN_NAME + GET_LIKES_URL.replace("{recipeId}",
@@ -265,6 +273,8 @@ public class RecipeDetailsActivity extends Activity {
                 }
                 return response != null ? response.getBody() : null;
             }
+
+            return null;
         }
 
         @Override
