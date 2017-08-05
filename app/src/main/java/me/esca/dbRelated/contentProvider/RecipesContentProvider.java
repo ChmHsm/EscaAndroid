@@ -425,7 +425,7 @@ public class RecipesContentProvider extends ContentProvider {
     public Bundle call(@NonNull String method, @Nullable String arg, @Nullable Bundle extras) {
 
         if (extras != null) {
-            if(extras.getString("uri") != null){
+            if (extras.getString("uri") != null) {
                 Uri uri = Uri.parse(extras.getString("uri"));
                 if (method.equals("saveOrUpdateRecipe")) {
 
@@ -482,17 +482,15 @@ public class RecipesContentProvider extends ContentProvider {
                 }
 
                 if (method.equals("saveOrUpdateLike")) {
-                    LikeRelationship like = (LikeRelationship) extras.getSerializable("like");
-                    if (like != null) {
-                        ContentValues imageEntityValues = new ContentValues();
-                        imageEntityValues.put(LikesTableDefinition.ID_COLUMN, like.getId());
-                        imageEntityValues.put(LikesTableDefinition.RECIPE_ID_COLUMN, like.getRecipe().getId());
-                        imageEntityValues.put(LikesTableDefinition.COOK_ID_COLUMN, like.getCook().getId());
-                        try {
-                            saveOrUpdate(imageEntityValues, uri);
-                        } catch (InvalidKeyException e) {
-                            e.printStackTrace();
-                        }
+
+                    ContentValues imageEntityValues = new ContentValues();
+                    imageEntityValues.put(LikesTableDefinition.ID_COLUMN, extras.getLong("likeId",-1));
+                    imageEntityValues.put(LikesTableDefinition.RECIPE_ID_COLUMN, extras.getLong("likeRecipe",-1));
+                    imageEntityValues.put(LikesTableDefinition.COOK_ID_COLUMN, extras.getLong("likeCook",-1));
+                    try {
+                        saveOrUpdate(imageEntityValues, uri);
+                    } catch (InvalidKeyException e) {
+                        e.printStackTrace();
                     }
                 }
 
@@ -501,8 +499,7 @@ public class RecipesContentProvider extends ContentProvider {
                     ContentValues[] recipes = (ContentValues[]) extras.getSerializable("recipes");
                     if (recipes != null) bulkSaveOrUpdate(recipes, uri);
                 }
-            }
-            else{
+            } else {
                 //TODO throw an exception for missing Uri
             }
 
@@ -561,28 +558,28 @@ public class RecipesContentProvider extends ContentProvider {
 
     public int bulkSaveOrUpdate(@NonNull ContentValues[] values, @NonNull Uri uri) {
 
-            int insertCount = 0;
-            try {
-                SQLiteDatabase sqlDB = database.getWritableDatabase();
+        int insertCount = 0;
+        try {
+            SQLiteDatabase sqlDB = database.getWritableDatabase();
 
-                try {
-                    sqlDB.beginTransaction();
-                    for (ContentValues value : values) {
-                        Uri uri1 = saveOrUpdate(value, uri);
-                        Long id = Long.parseLong(uri1.getLastPathSegment());
-                        if (id > 0) insertCount++;
-                    }
-                    sqlDB.setTransactionSuccessful();
-                } catch (Exception e) {
-                    Log.e("RECIPES: ", "Could not perform batch insertion transaction query on " +
-                            "table recipes. Exception message:" + e.getMessage());
-                } finally {
-                    sqlDB.endTransaction();
+            try {
+                sqlDB.beginTransaction();
+                for (ContentValues value : values) {
+                    Uri uri1 = saveOrUpdate(value, uri);
+                    Long id = Long.parseLong(uri1.getLastPathSegment());
+                    if (id > 0) insertCount++;
                 }
+                sqlDB.setTransactionSuccessful();
             } catch (Exception e) {
                 Log.e("RECIPES: ", "Could not perform batch insertion transaction query on " +
                         "table recipes. Exception message:" + e.getMessage());
+            } finally {
+                sqlDB.endTransaction();
             }
-            return insertCount;
+        } catch (Exception e) {
+            Log.e("RECIPES: ", "Could not perform batch insertion transaction query on " +
+                    "table recipes. Exception message:" + e.getMessage());
         }
+        return insertCount;
+    }
 }

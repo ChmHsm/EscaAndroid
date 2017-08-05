@@ -2,8 +2,11 @@ package me.esca.fragments;
 
 import android.app.Fragment;
 import android.app.LoaderManager;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.CursorLoader;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.Loader;
 import android.database.Cursor;
 import android.database.MatrixCursor;
@@ -26,6 +29,10 @@ import me.esca.dbRelated.recipe.tableUtils.RecipesTableDefinition;
 import me.esca.services.escaWS.recipes.RetrieveAllRecipes;
 import me.esca.utils.Connectivity;
 
+import static me.esca.activities.RecipeDetailsActivity.ACTIVITY_DETAIL_NOTIFICATION_BROADCAST;
+import static me.esca.activities.RecipeDetailsActivity.RESULT_CODE;
+import static me.esca.adapters.RecipesAdapter.REQUEST_CODE;
+
 /**
  * Created by Me on 18/06/2017.
  */
@@ -34,6 +41,30 @@ public class FoodFeedFragment extends Fragment implements LoaderManager.LoaderCa
 
     private RecyclerView mRecyclerView;
     private FloatingActionButton addRecipeButton;
+    private DataUpdateReceiver dataUpdateReceiver;
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (dataUpdateReceiver == null) dataUpdateReceiver = new DataUpdateReceiver();
+        IntentFilter intentFilter = new IntentFilter(ACTIVITY_DETAIL_NOTIFICATION_BROADCAST);
+        getActivity().registerReceiver(dataUpdateReceiver, intentFilter);
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        if (dataUpdateReceiver != null) getActivity().unregisterReceiver(dataUpdateReceiver);
+    }
+
+    private class DataUpdateReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent.getAction().equals(ACTIVITY_DETAIL_NOTIFICATION_BROADCAST)) {
+                getLoaderManager().initLoader(0, null, FoodFeedFragment.this);
+            }
+        }
+    }
 
     @Nullable
     @Override
@@ -133,4 +164,5 @@ public class FoodFeedFragment extends Fragment implements LoaderManager.LoaderCa
     public void onLoaderReset(Loader<Cursor> loader) {
 
     }
+
 }

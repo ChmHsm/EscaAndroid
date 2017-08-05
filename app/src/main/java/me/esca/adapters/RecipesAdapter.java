@@ -1,5 +1,7 @@
 package me.esca.adapters;
 
+import android.app.Activity;
+import android.app.Fragment;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
@@ -7,6 +9,7 @@ import android.database.Cursor;
 import android.database.DatabaseUtils;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Bundle;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -21,6 +24,8 @@ import com.varunest.sparkbutton.SparkEventListener;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
@@ -36,11 +41,15 @@ import me.esca.dbRelated.recipe.tableUtils.RecipesTableDefinition;
 import me.esca.model.Cook;
 import me.esca.model.Image;
 import me.esca.model.LikeRelationship;
+import me.esca.model.Recipe;
 import me.esca.services.escaWS.Utils;
 import me.esca.utils.CursorRecyclerViewAdapter;
 import me.esca.utils.DateFormatting;
 import me.esca.utils.glide.GlideApp;
 
+import static me.esca.services.escaWS.Utils.ADD_LIKE_TO_RECIPE_URL;
+import static me.esca.services.escaWS.Utils.ADD_RECIPE_URL;
+import static me.esca.services.escaWS.Utils.DELETE_LIKE_FROM_RECIPE_URL;
 import static me.esca.services.escaWS.Utils.GET_IMAGE_URL;
 import static me.esca.services.escaWS.Utils.GET_LIKES_URL;
 import static me.esca.services.escaWS.Utils.MAIN_DOMAIN_NAME;
@@ -49,6 +58,8 @@ import static me.esca.services.escaWS.Utils.MAIN_DOMAIN_NAME;
  * Created by Me on 04/06/2017.
  */
 public class RecipesAdapter extends CursorRecyclerViewAdapter {
+
+    public static int REQUEST_CODE = 01;
 
     public RecipesAdapter(Context context, Cursor cursor) {
         super(context, cursor);
@@ -83,7 +94,7 @@ public class RecipesAdapter extends CursorRecyclerViewAdapter {
                     intent.putExtra("recipeId", recipeId);
                     intent.putExtra("imageId", imageId);
                     intent.putExtra("imageExtension", imageExtension);
-                    mContext.startActivity(intent);
+                    ((Activity)mContext).startActivityForResult(intent, REQUEST_CODE);
                 }
             }
         });
@@ -128,31 +139,13 @@ public class RecipesAdapter extends CursorRecyclerViewAdapter {
             likeButton.setEventListener(new SparkEventListener() {
                 @Override
                 public void onEvent(ImageView button, boolean buttonState) {
-                    int likesNbr = Integer.parseInt(numberOfLikes.getText().toString());
+
                     if (buttonState) {
-                        likesNbr++;
-                        numberOfLikes.setText(String.valueOf(likesNbr));
-                        if(likeId == 0){
-                            Cursor cookCursor = mContext.getContentResolver().query(
-                                    RecipesContentProvider.CONTENT_URI_COOKS,
-                                    null, CooksTableDefinition.USERNAME_COLUMN + " = ? ",
-                                    new String[]{Utils.CONNECTED_COOK},
-                                    null);
-                            if(cookCursor != null && cookCursor.getCount() > 0){
-                                cookCursor.moveToNext();
-                                ContentValues likeContentValues = new ContentValues();
-                                likeContentValues.put(LikesTableDefinition.ID_COLUMN, likeId);
-                                likeContentValues.put(LikesTableDefinition.COOK_ID_COLUMN, cookCursor.
-                                getLong(cookCursor.getColumnIndex(CooksTableDefinition.ID_COLUMN)));
-                                likeContentValues.put(LikesTableDefinition.RECIPE_ID_COLUMN, id);
-                                mContext.getContentResolver().insert(
-                                        RecipesContentProvider.CONTENT_URI_LIKES,
-                                        likeContentValues);
-                            }
-                        }
+                        new AddRecipeLike().execute(id);
                     } else {
-                        if(likesNbr > 0) likesNbr--;
-                        numberOfLikes.setText(String.valueOf(likesNbr));
+                        if(likeId > 0) {
+                            new DeleteRecipeLike().execute(likeId);
+                        }
                     }
                 }
 
@@ -352,6 +345,96 @@ public class RecipesAdapter extends CursorRecyclerViewAdapter {
                     likeButton.setChecked(false);
                 }
 
+            }
+        }
+
+        private class AddRecipeLike extends AsyncTask<Long, LikeRelationship, LikeRelationship> {
+
+            @Override
+            protected void onPreExecute() {
+                super.onPreExecute();
+            }
+
+            @Override
+            protected LikeRelationship doInBackground(Long[] params) {
+
+                RestTemplate restTemplate = new RestTemplate();
+                List<HttpMessageConverter<?>> list = new ArrayList<>();
+                list.add(new MappingJackson2HttpMessageConverter());
+                restTemplate.setMessageConverters(list);
+
+                ResponseEntity<LikeRelationship> response = restTemplate
+                        .postForEntity(MAIN_DOMAIN_NAME+ADD_LIKE_TO_RECIPE_URL.replace("{recipeId}",
+                        String.valueOf(params[0])), null, LikeRelationship.class);
+
+                if(response != null){
+                    likeId = response.getBody().getId();
+                    return response.getBody();
+                }
+                return null;
+            }
+
+            @Override
+            protected void onPostExecute(LikeRelationship like) {
+                super.onPostExecute(like);
+                if(like != null){
+                    int likesNbr = Integer.parseInt(numberOfLikes.getText().toString());
+                    likesNbr++;
+                    numberOfLikes.setText(String.valueOf(likesNbr));
+                    if(likeId > 0){
+                        Cursor cookCursor = mContext.getContentResolver().query(
+                                RecipesContentProvider.CONTENT_URI_COOKS,
+                                null, CooksTableDefinition.USERNAME_COLUMN + " = ? ",
+                                new String[]{Utils.CONNECTED_COOK},
+                                null);
+                        if(cookCursor != null && cookCursor.getCount() > 0){
+
+                            Bundle bundle = new Bundle();
+                            bundle.putString("uri", RecipesContentProvider.CONTENT_URI_LIKES.toString());
+                            bundle.putLong("likeId", like.getId());
+                            bundle.putLong("likeCook", like.getCook().getId());
+                            bundle.putLong("likeRecipe", id);
+
+                            mContext.getContentResolver().call(RecipesContentProvider.CONTENT_URI_LIKES,
+                                    "saveOrUpdateLike", null, bundle);
+                        }
+                    }
+                }
+
+            }
+        }
+
+        private class DeleteRecipeLike extends AsyncTask<Long, Boolean, Boolean> {
+
+            @Override
+            protected void onPreExecute() {
+                super.onPreExecute();
+            }
+
+            @Override
+            protected Boolean doInBackground(Long[] params) {
+
+                RestTemplate restTemplate = new RestTemplate();
+                List<HttpMessageConverter<?>> list = new ArrayList<>();
+                list.add(new MappingJackson2HttpMessageConverter());
+                restTemplate.setMessageConverters(list);
+
+                restTemplate.delete(MAIN_DOMAIN_NAME+DELETE_LIKE_FROM_RECIPE_URL.replace("{likeId}",
+                                String.valueOf(params[0])), null, null);
+                return true;
+            }
+
+            @Override
+            protected void onPostExecute(Boolean isSuccess) {
+                super.onPostExecute(isSuccess);
+                if(isSuccess){
+                    int likesNbr = Integer.parseInt(numberOfLikes.getText().toString());
+                    if(likesNbr > 0) likesNbr--;
+                    numberOfLikes.setText(String.valueOf(likesNbr));
+                    mContext.getContentResolver().delete(
+                            Uri.parse(RecipesContentProvider.CONTENT_URI_LIKES+"/"+likeId)
+                            , null, null);
+                }
             }
         }
     }
