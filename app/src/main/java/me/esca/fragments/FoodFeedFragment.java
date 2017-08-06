@@ -31,7 +31,6 @@ import me.esca.services.escaWS.recipes.RetrieveAllRecipes;
 import me.esca.utils.Connectivity;
 
 import static me.esca.activities.RecipeDetailsActivity.ACTIVITY_DETAIL_NOTIFICATION_BROADCAST;
-import static me.esca.activities.RecipeDetailsActivity.RESULT_CODE;
 import static me.esca.adapters.RecipesAdapter.REQUEST_CODE;
 
 /**
@@ -42,29 +41,15 @@ public class FoodFeedFragment extends Fragment implements LoaderManager.LoaderCa
 
     private RecyclerView mRecyclerView;
     private FloatingActionButton addRecipeButton;
-    private DataUpdateReceiver dataUpdateReceiver;
     private ProgressDialog progressDialog;
 
-    @Override
-    public void onResume() {
-        super.onResume();
-        if (dataUpdateReceiver == null) dataUpdateReceiver = new DataUpdateReceiver();
-        IntentFilter intentFilter = new IntentFilter(ACTIVITY_DETAIL_NOTIFICATION_BROADCAST);
-        getActivity().registerReceiver(dataUpdateReceiver, intentFilter);
-    }
 
     @Override
-    public void onPause() {
-        super.onPause();
-        if (dataUpdateReceiver != null) getActivity().unregisterReceiver(dataUpdateReceiver);
-    }
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == REQUEST_CODE) {
+            data.getLongExtra("recipeId", 0);
 
-    private class DataUpdateReceiver extends BroadcastReceiver {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            if (intent.getAction().equals(ACTIVITY_DETAIL_NOTIFICATION_BROADCAST)) {
-                getLoaderManager().initLoader(0, null, FoodFeedFragment.this);
-            }
         }
     }
 
@@ -78,12 +63,9 @@ public class FoodFeedFragment extends Fragment implements LoaderManager.LoaderCa
 
         if(getActivity().getActionBar() != null )getActivity().getActionBar().show();
 
-        callRetrieveAllRecipesService();
-
         mRecyclerView = (RecyclerView) view.findViewById(R.id.food_feed_recycle_view);
         mRecyclerView.setLayoutManager(mLayoutManager);
         mRecyclerView.setAdapter(mAdapter);
-        getLoaderManager().initLoader(0, null, this);
 
         addRecipeButton = (FloatingActionButton) view.findViewById(R.id.add_recipe_fab);
         addRecipeButton.attachToRecyclerView(mRecyclerView);
@@ -97,14 +79,35 @@ public class FoodFeedFragment extends Fragment implements LoaderManager.LoaderCa
         return view;
     }
 
+
+
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        if(savedInstanceState != null){
+            if(savedInstanceState.getBoolean("callWS", false)){
+                callRetrieveAllRecipesService();
+                getLoaderManager().initLoader(0, null, this);
+            }
+        }
+        else{
+            callRetrieveAllRecipesService();
+            getLoaderManager().initLoader(0, null, this);
+        }
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putBoolean("callWS", true);
+    }
+
     private void callRetrieveAllRecipesService(){
 
         if(Connectivity.isNetworkAvailable(getActivity())) {
-            progressDialog = new ProgressDialog(getActivity());
-            progressDialog.setTitle("Loading");
-            progressDialog.setMessage("Loading");
-            progressDialog.show();
+
             Intent intent = new Intent(getActivity(), RetrieveAllRecipes.class);
+
             getActivity().startService(intent);
         }
         else Toast.makeText(getActivity(), "Device is not connected", Toast.LENGTH_SHORT).show();
@@ -112,6 +115,8 @@ public class FoodFeedFragment extends Fragment implements LoaderManager.LoaderCa
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+
+
         switch (id) {
             case 0:
                 return new CursorLoader(getActivity(), RecipesContentProvider.CONTENT_URI_RECIPES, null,
@@ -140,10 +145,6 @@ public class FoodFeedFragment extends Fragment implements LoaderManager.LoaderCa
                 fillMx(data, mx);
 
                 ((RecipesAdapter) mRecyclerView.getAdapter()).swapCursor(mx);
-                if(progressDialog != null){
-                    progressDialog.hide();
-                    progressDialog.dismiss();
-                }
 
                 break;
             default:
@@ -173,7 +174,6 @@ public class FoodFeedFragment extends Fragment implements LoaderManager.LoaderCa
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
-
     }
 
 }

@@ -164,7 +164,7 @@ public class AddNewRecipeService extends Service {
                     imageFile,        /* The file where the data to upload exists */
                     myObjectMetadata);
 
-            return null;
+            return resultLocation.toString();
         }
 
         @Override
@@ -173,7 +173,7 @@ public class AddNewRecipeService extends Service {
 
             Intent intent = new Intent("ServiceIsDone");
             if(s != null){
-                intent.putExtra("resultLocation", resultLocation.toString());
+                intent.putExtra("resultLocation", s);
             }else{
                 intent.putExtra("resultLocation", "not added");
             }

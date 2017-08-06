@@ -2,6 +2,7 @@ package me.esca.services.escaWS.recipes;
 
 import android.app.Activity;
 import android.app.IntentService;
+import android.app.ProgressDialog;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.database.Cursor;
@@ -70,6 +71,7 @@ public class RetrieveAllRecipes extends IntentService {
         intent.putExtra("RecipesSize", cursor == null ? 0 : cursor.getCount());
         if(cursor != null) cursor.close();
         sendBroadcast(intent);
+        stopSelf();
     }
 
     public int insertEntities(List<Recipe> recipes) {

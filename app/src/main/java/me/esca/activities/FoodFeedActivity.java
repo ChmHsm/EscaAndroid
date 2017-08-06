@@ -7,6 +7,7 @@ import android.app.job.JobInfo;
 import android.app.job.JobScheduler;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.LinkProperties;
 import android.net.Network;
@@ -14,6 +15,7 @@ import android.net.NetworkCapabilities;
 import android.net.NetworkRequest;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.PersistableBundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.BottomNavigationView;
@@ -32,11 +34,14 @@ import me.esca.fragments.ProfileFragment;
 import me.esca.fragments.SearchFragment;
 import me.esca.utils.Connectivity;
 
+import static me.esca.activities.RecipeDetailsActivity.RESULT_CODE;
+import static me.esca.adapters.RecipesAdapter.REQUEST_CODE;
+
 /**
  * Created by Me on 03/06/2017.
  */
 
-public class FoodFeedActivity extends Activity{
+public class FoodFeedActivity extends Activity {
 
     private BottomNavigationView bottomNavigationView;
     private View networkStatusBar;
@@ -49,6 +54,8 @@ public class FoodFeedActivity extends Activity{
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         toolbar.setTitle(R.string.app_name);
         setActionBar(toolbar);
+
+
 
         bottomNavigationView = (BottomNavigationView)
                 findViewById(R.id.bottom_foodfeed_navigation);
@@ -95,7 +102,7 @@ public class FoodFeedActivity extends Activity{
         if (findViewById(R.id.fragment_container) != null) {
 
             if (savedInstanceState != null) {
-                return;
+               return;
             }
             FoodFeedFragment foodFeedFragment = new FoodFeedFragment();
             foodFeedFragment.setArguments(getIntent().getExtras());
@@ -105,9 +112,9 @@ public class FoodFeedActivity extends Activity{
 
     }
 
-    private void switchToFragment(@NonNull Fragment fragment, @Nullable Bundle bundle){
+    private void switchToFragment(@NonNull Fragment fragment, @Nullable Bundle bundle) {
 
-        if(bundle != null){
+        if (bundle != null) {
             fragment.setArguments(bundle);
         }
         FragmentTransaction transaction = getFragmentManager().beginTransaction();
@@ -118,23 +125,22 @@ public class FoodFeedActivity extends Activity{
 
     @Override
     public void onBackPressed() {
-        if(bottomNavigationView != null)
-            if(bottomNavigationView.getSelectedItemId() != R.id.action_home){
+        if (bottomNavigationView != null)
+            if (bottomNavigationView.getSelectedItemId() != R.id.action_home) {
                 FoodFeedFragment foodFeedFragment = new FoodFeedFragment();
                 switchToFragment(foodFeedFragment, null);
                 bottomNavigationView.setSelectedItemId(R.id.action_home);
-            }
-            else{
+            } else {
                 finish();
             }
     }
 
-    public void setNetworkStateBarVisibility(boolean visible){
+    public void setNetworkStateBarVisibility(boolean visible) {
 
-        TextView connected = (TextView)networkStatusBar.findViewById(R.id.network_state_text_view2);
-        TextView disconnected = (TextView)networkStatusBar.findViewById(R.id.network_state_text_view);
+        TextView connected = (TextView) networkStatusBar.findViewById(R.id.network_state_text_view2);
+        TextView disconnected = (TextView) networkStatusBar.findViewById(R.id.network_state_text_view);
         networkStatusBar.setVisibility(View.VISIBLE);
-        if(visible) {
+        if (visible) {
             connected.setVisibility(View.VISIBLE);
             disconnected.setVisibility(View.GONE);
             Handler handler = new Handler();
@@ -144,8 +150,7 @@ public class FoodFeedActivity extends Activity{
                     networkStatusBar.setVisibility(View.GONE);
                 }
             }, 1000);
-        }
-        else {
+        } else {
             connected.setVisibility(View.GONE);
             disconnected.setVisibility(View.VISIBLE);
         }
@@ -176,6 +181,7 @@ public class FoodFeedActivity extends Activity{
                 public void onLosing(Network network, int maxMsToLive) {
                     super.onLosing(network, maxMsToLive);
                 }
+
                 @Override
                 public void onLost(Network network) {
                     super.onLost(network);
@@ -187,10 +193,12 @@ public class FoodFeedActivity extends Activity{
                     });
 
                 }
+
                 @Override
                 public void onCapabilitiesChanged(Network network, NetworkCapabilities networkCapabilities) {
                     super.onCapabilitiesChanged(network, networkCapabilities);
                 }
+
                 @Override
                 public void onLinkPropertiesChanged(Network network, LinkProperties linkProperties) {
                     super.onLinkPropertiesChanged(network, linkProperties);
@@ -199,4 +207,28 @@ public class FoodFeedActivity extends Activity{
         }
     }
 
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+    }
 }

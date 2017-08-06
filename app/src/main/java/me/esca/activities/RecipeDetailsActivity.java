@@ -203,12 +203,20 @@ public class RecipeDetailsActivity extends Activity {
     @Override
     public void onBackPressed() {
         super.onBackPressed();
-        Intent intent = new Intent(ACTIVITY_DETAIL_NOTIFICATION_BROADCAST);
+        //TODO find a way to update the recycler view's like value in the food feed after finishing this activity
+        Intent intent = new Intent();
         intent.putExtra("recipeId", recipeId);
         intent.putExtra("recipePosition", "");
         intent.putExtra("likeChanged", likeStateChanged);
         intent.putExtra("newLikeState", likeButton.isChecked());
-        sendBroadcast(intent);
+        if (getParent() == null) {
+            setResult(Activity.RESULT_OK, intent);
+        }
+        else {
+            getParent().setResult(Activity.RESULT_OK, intent);
+        }
+
+        finishActivity(REQUEST_CODE);
     }
 
     private class GetRecipeLikes extends AsyncTask<Long, List<LikeRelationship>, List<LikeRelationship>> {

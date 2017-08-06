@@ -62,12 +62,11 @@ public class ProfileRecipesAdapter extends CursorRecyclerViewAdapter {
                 Long recipeId = ((ViewHolder) viewHolder).recipeId;
                 Long imageId = ((ViewHolder) viewHolder).imageId;
                 String imageExtension = ((ViewHolder) viewHolder).imageExtension;
-                if(recipeId <= 0){
+                if (recipeId <= 0) {
                     throw new IllegalArgumentException();
-                }
-                else{
+                } else {
                     Intent intent = new Intent(mContext, RecipeDetailsActivity.class);
-                    intent.putExtra("recipeId",recipeId);
+                    intent.putExtra("recipeId", recipeId);
                     intent.putExtra("imageId", imageId);
                     intent.putExtra("imageExtension", imageExtension);
                     mContext.startActivity(intent);
@@ -106,12 +105,8 @@ public class ProfileRecipesAdapter extends CursorRecyclerViewAdapter {
             recipeTitle.setText(c.getString(c.getColumnIndex(RecipesTableDefinition.TITLE_COLUMN)));
 
             recipeId = c.getLong(c.getColumnIndex(RecipesTableDefinition.ID_COLUMN));
-            if(Connectivity.isNetworkAvailable(mContext)) {
-                new GetRecipeImage().execute(recipeId);
-            }
-            else{
-                //TODO Notify not connected
-            }
+            new GetRecipeImage().execute(recipeId);
+
         }
 
         private class GetRecipeImage extends AsyncTask<Long, Image, Image> {
@@ -129,7 +124,7 @@ public class ProfileRecipesAdapter extends CursorRecyclerViewAdapter {
                                 ImagesTableDefinition.IS_MAIN_PICTURE_COLUMN + " = 1", new String[]{String.valueOf(params[0])},
                         null);
 
-                if(cursor != null && cursor.getCount() > 0){
+                if (cursor != null && cursor.getCount() > 0) {
                     cursor.moveToFirst();
                     return new Image(
                             cursor.getLong(cursor.getColumnIndex(ImagesTableDefinition.ID_COLUMN)),
@@ -140,11 +135,10 @@ public class ProfileRecipesAdapter extends CursorRecyclerViewAdapter {
                             true,
                             null, null,
                             cursor.getString(cursor.getColumnIndex(ImagesTableDefinition.EXTENSION_COLUMN)));
-                }
-                else{
+                } else if (Connectivity.isNetworkAvailable(mContext)) {
                     RestTemplate restTemplate = new RestTemplate();
                     ResponseEntity<Image> response =
-                            restTemplate.exchange(MAIN_DOMAIN_NAME+GET_IMAGE_URL.replace("{recipeId}",
+                            restTemplate.exchange(MAIN_DOMAIN_NAME + GET_IMAGE_URL.replace("{recipeId}",
                                     String.valueOf(params[0])),
                                     HttpMethod.GET, null, new ParameterizedTypeReference<Image>() {
                                     });
@@ -166,17 +160,24 @@ public class ProfileRecipesAdapter extends CursorRecyclerViewAdapter {
                     }
                     return response != null ? response.getBody() : null;
                 }
+                else{
+                    //TODO notify not connected
+                }
+
+                return null;
             }
 
             @Override
             protected void onPostExecute(Image image) {
                 super.onPostExecute(image);
-                imageId = image.getId();
-                imageExtension = image.getExtension();
-                GlideApp.with(mContext)
-                        .load("http://escaws.s3.amazonaws.com/Image storage directory/"+image.getId()+image.getExtension())
-                        .fitCenter()
-                        .into(recipeImageView);
+                if(image != null){
+                    imageId = image.getId();
+                    imageExtension = image.getExtension();
+                    GlideApp.with(mContext)
+                            .load("http://escaws.s3.amazonaws.com/Image storage directory/" + image.getId() + image.getExtension())
+                            .fitCenter()
+                            .into(recipeImageView);
+                }
             }
         }
     }

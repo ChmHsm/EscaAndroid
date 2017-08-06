@@ -60,7 +60,7 @@ import static me.esca.services.escaWS.Utils.MAIN_DOMAIN_NAME;
  */
 public class RecipesAdapter extends CursorRecyclerViewAdapter {
 
-    public static int REQUEST_CODE = 01;
+    public static int REQUEST_CODE = 1;
 
     public RecipesAdapter(Context context, Cursor cursor) {
         super(context, cursor);
