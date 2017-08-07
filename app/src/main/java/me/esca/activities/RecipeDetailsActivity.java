@@ -263,23 +263,27 @@ public class RecipeDetailsActivity extends Activity {
                 likesCursor.close();
                 return likes;
             } else if (Connectivity.isNetworkAvailable(RecipeDetailsActivity.this)) {
-                RestTemplate restTemplate = new RestTemplate();
-                ResponseEntity<List<LikeRelationship>> response =
-                        restTemplate.exchange(MAIN_DOMAIN_NAME + GET_LIKES_URL.replace("{recipeId}",
-                                String.valueOf(params[0])),
-                                HttpMethod.GET, null, new ParameterizedTypeReference<List<LikeRelationship>>() {
-                                });
-                if (response != null) {
-                    for (LikeRelationship like : response.getBody()) {
-                        ContentValues contentValues = new ContentValues();
-                        contentValues.put(ImagesTableDefinition.ID_COLUMN, like.getId());
-                        contentValues.put(ImagesTableDefinition.COOK_ID_COLUMN, like.getCook().getId());
-                        contentValues.put(ImagesTableDefinition.RECIPE_ID_COLUMN, String.valueOf(params[0]));
+                try{
+                    RestTemplate restTemplate = new RestTemplate();
+                    ResponseEntity<List<LikeRelationship>> response =
+                            restTemplate.exchange(MAIN_DOMAIN_NAME + GET_LIKES_URL.replace("{recipeId}",
+                                    String.valueOf(params[0])),
+                                    HttpMethod.GET, null, new ParameterizedTypeReference<List<LikeRelationship>>() {
+                                    });
+                    if (response != null) {
+                        for (LikeRelationship like : response.getBody()) {
+                            ContentValues contentValues = new ContentValues();
+                            contentValues.put(ImagesTableDefinition.ID_COLUMN, like.getId());
+                            contentValues.put(ImagesTableDefinition.COOK_ID_COLUMN, like.getCook().getId());
+                            contentValues.put(ImagesTableDefinition.RECIPE_ID_COLUMN, String.valueOf(params[0]));
 
-                        RecipeDetailsActivity.this.getContentResolver().insert(RecipesContentProvider.CONTENT_URI_LIKES, contentValues);
+                            RecipeDetailsActivity.this.getContentResolver().insert(RecipesContentProvider.CONTENT_URI_LIKES, contentValues);
+                        }
                     }
+                    return response != null ? response.getBody() : null;
+                }catch (Exception e){
+                    return null;
                 }
-                return response != null ? response.getBody() : null;
             }
 
             return null;

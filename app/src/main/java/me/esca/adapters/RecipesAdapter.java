@@ -311,22 +311,26 @@ public class RecipesAdapter extends CursorRecyclerViewAdapter {
                     return likes;
                 } else if (Connectivity.isNetworkAvailable(mContext)) {
                     RestTemplate restTemplate = new RestTemplate();
-                    ResponseEntity<List<LikeRelationship>> response =
-                            restTemplate.exchange(MAIN_DOMAIN_NAME + GET_LIKES_URL.replace("{recipeId}",
-                                    String.valueOf(params[0])),
-                                    HttpMethod.GET, null, new ParameterizedTypeReference<List<LikeRelationship>>() {
-                                    });
-                    if (response != null) {
-                        for (LikeRelationship like : response.getBody()) {
-                            ContentValues contentValues = new ContentValues();
-                            contentValues.put(ImagesTableDefinition.ID_COLUMN, like.getId());
-                            contentValues.put(ImagesTableDefinition.COOK_ID_COLUMN, like.getCook().getId());
-                            contentValues.put(ImagesTableDefinition.RECIPE_ID_COLUMN, String.valueOf(params[0]));
+                    try{
+                        ResponseEntity<List<LikeRelationship>> response =
+                                restTemplate.exchange(MAIN_DOMAIN_NAME + GET_LIKES_URL.replace("{recipeId}",
+                                        String.valueOf(params[0])),
+                                        HttpMethod.GET, null, new ParameterizedTypeReference<List<LikeRelationship>>() {
+                                        });
+                        if (response != null) {
+                            for (LikeRelationship like : response.getBody()) {
+                                ContentValues contentValues = new ContentValues();
+                                contentValues.put(ImagesTableDefinition.ID_COLUMN, like.getId());
+                                contentValues.put(ImagesTableDefinition.COOK_ID_COLUMN, like.getCook().getId());
+                                contentValues.put(ImagesTableDefinition.RECIPE_ID_COLUMN, String.valueOf(params[0]));
 
-                            mContext.getContentResolver().insert(RecipesContentProvider.CONTENT_URI_LIKES, contentValues);
+                                mContext.getContentResolver().insert(RecipesContentProvider.CONTENT_URI_LIKES, contentValues);
+                            }
                         }
+                        return response != null ? response.getBody() : null;
+                    } catch (Exception e){
+                        return null;
                     }
-                    return response != null ? response.getBody() : null;
                 }
                 return null;
             }
