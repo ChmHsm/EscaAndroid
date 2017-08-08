@@ -165,7 +165,7 @@ public class CookFragment extends Fragment implements ServiceConnection {
                     }
                 }
                 else{
-                    //TODO notify not connected
+                    Toast.makeText(getActivity(), "You're not connected to the internet", Toast.LENGTH_SHORT).show();
                 }
             }
         });

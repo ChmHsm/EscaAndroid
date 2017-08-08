@@ -11,6 +11,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
@@ -161,7 +162,7 @@ public class ProfileRecipesAdapter extends CursorRecyclerViewAdapter {
                     return response != null ? response.getBody() : null;
                 }
                 else{
-                    //TODO notify not connected
+                    Toast.makeText(mContext, "You're not connected to the internet", Toast.LENGTH_SHORT).show();
                 }
 
                 return null;

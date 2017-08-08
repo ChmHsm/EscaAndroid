@@ -9,6 +9,7 @@ import android.os.AsyncTask;
 import android.os.Binder;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
+import android.widget.Toast;
 
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
@@ -47,7 +48,7 @@ public class FetchImageByRecipeId extends Service {
             new GetRecipeImage().execute(recipeId);
         }
         else{
-            //TODO notify not connected
+            Toast.makeText(context, "You're not connected to the internet", Toast.LENGTH_SHORT).show();
         }
         return mBinder;
     }
