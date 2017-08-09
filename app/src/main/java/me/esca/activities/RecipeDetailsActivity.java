@@ -326,14 +326,26 @@ public class RecipeDetailsActivity extends Activity {
             list.add(new MappingJackson2HttpMessageConverter());
             restTemplate.setMessageConverters(list);
 
-            ResponseEntity<LikeRelationship> response = restTemplate
-                    .postForEntity(MAIN_DOMAIN_NAME + ADD_LIKE_TO_RECIPE_URL.replace("{recipeId}",
-                            String.valueOf(params[0])), null, LikeRelationship.class);
+            try{
+                ResponseEntity<LikeRelationship> response = restTemplate
+                        .postForEntity(MAIN_DOMAIN_NAME + ADD_LIKE_TO_RECIPE_URL.replace("{recipeId}",
+                                String.valueOf(params[0])), null, LikeRelationship.class);
 
-            if (response != null) {
-                likeId = response.getBody().getId();
-                return response.getBody();
+                if (response != null) {
+                    likeId = response.getBody().getId();
+                    return response.getBody();
+                }
+            } catch (Exception e){
+                RecipeDetailsActivity.this.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(RecipeDetailsActivity.this, "Oops, something went wrong," +
+                                "we couldn't like this recipe.", Toast.LENGTH_LONG).show();
+                    }
+                });
+
             }
+
             return null;
         }
 
@@ -382,8 +394,19 @@ public class RecipeDetailsActivity extends Activity {
             list.add(new MappingJackson2HttpMessageConverter());
             restTemplate.setMessageConverters(list);
 
-            restTemplate.delete(MAIN_DOMAIN_NAME + DELETE_LIKE_FROM_RECIPE_URL.replace("{likeId}",
-                    String.valueOf(params[0])), null, null);
+            try {
+                restTemplate.delete(MAIN_DOMAIN_NAME + DELETE_LIKE_FROM_RECIPE_URL.replace("{likeId}",
+                        String.valueOf(params[0])), null, null);
+
+            } catch (Exception e){
+                RecipeDetailsActivity.this.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(RecipeDetailsActivity.this, "Oops, something went wrong," +
+                                " we couldn't unlike this recipe", Toast.LENGTH_LONG).show();
+                    }
+                });
+            }
             return true;
         }
 

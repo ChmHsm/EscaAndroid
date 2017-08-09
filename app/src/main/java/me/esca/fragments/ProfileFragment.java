@@ -14,6 +14,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import me.esca.R;
 import me.esca.adapters.ProfileRecipesAdapter;
@@ -28,6 +29,7 @@ public class ProfileFragment extends Fragment implements LoaderManager.LoaderCal
 
 
     private RecyclerView mRecyclerView;
+    private TextView numberOfCookRecipes;
 
     @Nullable
     @Override
@@ -42,6 +44,7 @@ public class ProfileFragment extends Fragment implements LoaderManager.LoaderCal
         mRecyclerView = (RecyclerView) view.findViewById(R.id.profile_recipes_recycle_view);
         mRecyclerView.setLayoutManager(mLayoutManager);
         mRecyclerView.setAdapter(mAdapter);
+        numberOfCookRecipes = (TextView) view.findViewById(R.id.number_of_cook_recipes);
         getLoaderManager().initLoader(1, null, this);
 
         return view;
@@ -77,6 +80,7 @@ public class ProfileFragment extends Fragment implements LoaderManager.LoaderCal
                 fillMx(data, mx);
 
                 ((ProfileRecipesAdapter) mRecyclerView.getAdapter()).swapCursor(mx);
+                numberOfCookRecipes.setText(String.valueOf(data.getCount()));
 
                 break;
             default:

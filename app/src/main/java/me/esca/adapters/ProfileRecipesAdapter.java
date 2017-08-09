@@ -95,15 +95,18 @@ public class ProfileRecipesAdapter extends CursorRecyclerViewAdapter {
         public String imageExtension;
 
 
+
         public ViewHolder(View view) {
             super(view);
             recipeImageView = (ImageView) view.findViewById(R.id.recipeThumbnail);
             recipeTitle = (TextView) view.findViewById(R.id.recipeTitle);
+
         }
 
         public void setData(Cursor c) {
             recipeImageView.setImageDrawable(mContext.getDrawable(R.drawable.recipe_image_placeholder));
             recipeTitle.setText(c.getString(c.getColumnIndex(RecipesTableDefinition.TITLE_COLUMN)));
+
 
             recipeId = c.getLong(c.getColumnIndex(RecipesTableDefinition.ID_COLUMN));
             new GetRecipeImage().execute(recipeId);

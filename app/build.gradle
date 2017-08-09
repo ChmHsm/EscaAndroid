@@ -55,6 +55,7 @@ dependencies {
     compile 'de.hdodenhof:circleimageview:2.1.0'
     compile 'com.github.varunest:sparkbutton:1.0.5'
     compile 'com.github.castorflex.smoothprogressbar:library-circular:1.2.0'
+    compile 'com.mikhaellopez:circularfillableloaders:1.2.0'
 }
 
 
