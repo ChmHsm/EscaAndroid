@@ -35,10 +35,12 @@ import me.esca.R;
 import me.esca.activities.RecipeDetailsActivity;
 import me.esca.dbRelated.contentProvider.RecipesContentProvider;
 import me.esca.dbRelated.cook.tableUtils.CooksTableDefinition;
+import me.esca.dbRelated.followRelationship.tableUtils.FollowsTableDefinition;
 import me.esca.dbRelated.image.tableUtils.ImagesTableDefinition;
 import me.esca.dbRelated.likeRelationship.tableUtils.LikesTableDefinition;
 import me.esca.dbRelated.recipe.tableUtils.RecipesTableDefinition;
 import me.esca.model.Cook;
+import me.esca.model.FollowRelationship;
 import me.esca.model.Image;
 import me.esca.model.LikeRelationship;
 import me.esca.model.Recipe;
@@ -50,10 +52,14 @@ import me.esca.utils.glide.GlideApp;
 
 import static me.esca.services.escaWS.Utils.ADD_LIKE_TO_RECIPE_URL;
 import static me.esca.services.escaWS.Utils.ADD_RECIPE_URL;
+import static me.esca.services.escaWS.Utils.CONNECTED_COOK;
+import static me.esca.services.escaWS.Utils.COOK_FOLLOWERS_URL;
 import static me.esca.services.escaWS.Utils.DELETE_LIKE_FROM_RECIPE_URL;
+import static me.esca.services.escaWS.Utils.FOLLOW_COOK_URL;
 import static me.esca.services.escaWS.Utils.GET_IMAGE_URL;
 import static me.esca.services.escaWS.Utils.GET_LIKES_URL;
 import static me.esca.services.escaWS.Utils.MAIN_DOMAIN_NAME;
+import static me.esca.services.escaWS.Utils.UNFOLLOW_COOK_URL;
 
 /**
  * Created by Me on 04/06/2017.
@@ -124,6 +130,9 @@ public class RecipesAdapter extends CursorRecyclerViewAdapter {
         public String imageExtension;
         public SparkButton likeButton;
         public TextView numberOfLikes;
+        public String cookUsername;
+        public Long recipesCookId;
+        public long followId;
 
         public ViewHolder(View view) {
             super(view);
@@ -180,19 +189,30 @@ public class RecipesAdapter extends CursorRecyclerViewAdapter {
             Cursor cursor = mContext.getContentResolver().query(
                     Uri.parse(RecipesContentProvider.CONTENT_URI_COOKS + "/"
                             + c.getString(c.getColumnIndex(RecipesTableDefinition.COOK_COLUMN))),
-                    new String[]{CooksTableDefinition.USERNAME_COLUMN},
+                    new String[]{CooksTableDefinition.USERNAME_COLUMN, CooksTableDefinition.ID_COLUMN},
                     null, null, null);
             if (cursor != null && cursor.getCount() > 0) {
                 cursor.moveToFirst();
-                cookNameTextView.setText(cursor.getString(
-                        cursor.getColumnIndex(CooksTableDefinition.USERNAME_COLUMN)));
+                cookUsername = cursor.getString(
+                        cursor.getColumnIndex(CooksTableDefinition.USERNAME_COLUMN));
+                recipesCookId = cursor.getLong(
+                        cursor.getColumnIndex(CooksTableDefinition.ID_COLUMN));
+                cookNameTextView.setText(cookUsername);
                 cursor.close();
             }
+
+            new GetFollowState().execute(recipesCookId);
 
             followTextView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Toast.makeText(mContext, "Follow button", Toast.LENGTH_SHORT).show();
+                    if (followTextView.getText().toString().equalsIgnoreCase(
+                            mContext.getResources().getString(R.string.follow))) {
+                        new FollowCook().execute(cookUsername);
+                    } else {
+                        if (followId > 0)
+                            new UnfollowCook().execute(followId);
+                    }
                 }
             });
             new GetRecipeLikes().execute(id);
@@ -311,7 +331,7 @@ public class RecipesAdapter extends CursorRecyclerViewAdapter {
                     return likes;
                 } else if (Connectivity.isNetworkAvailable(mContext)) {
                     RestTemplate restTemplate = new RestTemplate();
-                    try{
+                    try {
                         ResponseEntity<List<LikeRelationship>> response =
                                 restTemplate.exchange(MAIN_DOMAIN_NAME + GET_LIKES_URL.replace("{recipeId}",
                                         String.valueOf(params[0])),
@@ -328,7 +348,7 @@ public class RecipesAdapter extends CursorRecyclerViewAdapter {
                             }
                         }
                         return response != null ? response.getBody() : null;
-                    } catch (Exception e){
+                    } catch (Exception e) {
                         return null;
                     }
                 }
@@ -371,7 +391,7 @@ public class RecipesAdapter extends CursorRecyclerViewAdapter {
                 list.add(new MappingJackson2HttpMessageConverter());
                 restTemplate.setMessageConverters(list);
 
-                try{
+                try {
                     ResponseEntity<LikeRelationship> response = restTemplate
                             .postForEntity(MAIN_DOMAIN_NAME + ADD_LIKE_TO_RECIPE_URL.replace("{recipeId}",
                                     String.valueOf(params[0])), null, LikeRelationship.class);
@@ -380,8 +400,8 @@ public class RecipesAdapter extends CursorRecyclerViewAdapter {
                         likeId = response.getBody().getId();
                         return response.getBody();
                     }
-                }catch(Exception e){
-                    ((Activity)mContext).runOnUiThread(new Runnable() {
+                } catch (Exception e) {
+                    ((Activity) mContext).runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
                             Toast.makeText(mContext, "Oops, something went wrong," +
@@ -438,11 +458,13 @@ public class RecipesAdapter extends CursorRecyclerViewAdapter {
                 list.add(new MappingJackson2HttpMessageConverter());
                 restTemplate.setMessageConverters(list);
 
-                try{
+                try {
                     restTemplate.delete(MAIN_DOMAIN_NAME + DELETE_LIKE_FROM_RECIPE_URL.replace("{likeId}",
                             String.valueOf(params[0])), null, null);
-                }catch (Exception e){
-                    ((Activity)mContext).runOnUiThread(new Runnable() {
+
+
+                } catch (Exception e) {
+                    ((Activity) mContext).runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
                             Toast.makeText(mContext, "Oops, something went wrong," +
@@ -467,5 +489,207 @@ public class RecipesAdapter extends CursorRecyclerViewAdapter {
                 }
             }
         }
+
+        private class FollowCook extends AsyncTask<String, FollowRelationship, FollowRelationship> {
+
+            @Override
+            protected void onPreExecute() {
+                super.onPreExecute();
+            }
+
+            @Override
+            protected FollowRelationship doInBackground(String[] params) {
+
+                if (Connectivity.isNetworkAvailable(mContext)) {
+
+                    RestTemplate restTemplate = new RestTemplate();
+                    List<HttpMessageConverter<?>> list = new ArrayList<>();
+                    list.add(new MappingJackson2HttpMessageConverter());
+                    restTemplate.setMessageConverters(list);
+
+                    try {
+                        ResponseEntity<FollowRelationship> response = restTemplate
+                                .postForEntity(MAIN_DOMAIN_NAME + FOLLOW_COOK_URL.replace("{followeeCook}",
+                                        params[0]), null, FollowRelationship.class);
+
+                        if (response != null) {
+                            return response.getBody();
+                        }
+                    } catch (Exception e) {
+                        ((Activity) mContext).runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                Toast.makeText(mContext, "Oops, something went wrong," +
+                                        "we couldn't follow this cook.", Toast.LENGTH_LONG).show();
+                            }
+                        });
+                    }
+                } else {
+                    //TODO notify not connected
+                }
+                return null;
+            }
+
+            @Override
+            protected void onPostExecute(FollowRelationship followRelationship) {
+                super.onPostExecute(followRelationship);
+                if (followRelationship != null) {
+                    followId = followRelationship.getId();
+                    followTextView.setText(R.string.following);
+
+                    Cursor followCursor = mContext.getContentResolver().query(
+                            Uri.parse(RecipesContentProvider.CONTENT_URI_FOLLOWS + "/" + followRelationship.getId()),
+                            null, null,
+                            null,
+                            null);
+                    if (followCursor != null && followCursor.getCount() > 0) {
+
+                        Cursor cookFollowCursor = mContext.getContentResolver().query(
+                                RecipesContentProvider.CONTENT_URI_COOKS,
+                                new String[]{CooksTableDefinition.ID_COLUMN},
+                                CooksTableDefinition.USERNAME_COLUMN + " like ?",
+                                new String[]{"'" + CONNECTED_COOK + "'"},
+                                null);
+                        if (cookFollowCursor != null && cookFollowCursor.getCount() > 0) {
+                            cookFollowCursor.moveToNext();
+                            Long cookId = cookFollowCursor.getLong(cookFollowCursor
+                                    .getColumnIndex(CooksTableDefinition.ID_COLUMN));
+
+                            Bundle bundle = new Bundle();
+                            bundle.putString("uri", RecipesContentProvider.CONTENT_URI_FOLLOWS.toString());
+                            bundle.putLong("followId", followRelationship.getId());
+                            bundle.putLong("follower", cookId);
+                            bundle.putLong("followee", recipesCookId);
+
+                            mContext.getContentResolver().call(RecipesContentProvider.CONTENT_URI_LIKES,
+                                    "saveOrUpdateFollows", null, bundle);
+                        }
+                    }
+                }
+            }
+        }
+
+        private class UnfollowCook extends AsyncTask<Long, Boolean, Boolean> {
+
+            @Override
+            protected void onPreExecute() {
+                super.onPreExecute();
+            }
+
+            @Override
+            protected Boolean doInBackground(Long[] params) {
+
+                if (Connectivity.isNetworkAvailable(mContext)) {
+                    RestTemplate restTemplate = new RestTemplate();
+                    List<HttpMessageConverter<?>> list = new ArrayList<>();
+                    list.add(new MappingJackson2HttpMessageConverter());
+                    restTemplate.setMessageConverters(list);
+
+                    try {
+                        restTemplate.delete(MAIN_DOMAIN_NAME + UNFOLLOW_COOK_URL.replace("{followId}",
+                                String.valueOf(params[0])), null, null);
+
+
+                    } catch (Exception e) {
+                        ((Activity) mContext).runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                Toast.makeText(mContext, "Oops, something went wrong," +
+                                        "we couldn't unfollow this cook.", Toast.LENGTH_LONG).show();
+                            }
+                        });
+                    }
+                }
+                return true;
+            }
+
+            @Override
+            protected void onPostExecute(Boolean isSuccess) {
+                super.onPostExecute(isSuccess);
+                if (isSuccess) {
+                    followTextView.setText(R.string.follow);
+                }
+            }
+        }
+
+        private class GetFollowState extends AsyncTask<Long, Boolean, Boolean> {
+
+            @Override
+            protected void onPreExecute() {
+                super.onPreExecute();
+            }
+
+            @Override
+            protected Boolean doInBackground(Long[] params) {
+
+                Cursor cookCursor = mContext.getContentResolver()
+                        .query(RecipesContentProvider.CONTENT_URI_COOKS,
+                                new String[]{CooksTableDefinition.ID_COLUMN},
+                                CooksTableDefinition.USERNAME_COLUMN + " like ?",
+                                new String[]{CONNECTED_COOK},
+                                null);
+
+                if (cookCursor != null && cookCursor.getCount() > 0) {
+                    cookCursor.moveToNext();
+                    Cursor followCursor = mContext.getContentResolver().query(RecipesContentProvider.CONTENT_URI_FOLLOWS,
+                            null, FollowsTableDefinition.FOLLOWEE_COLUMN + " = ? "
+                                    + " and " + FollowsTableDefinition.FOLLOWER_COLUMN + " = ?",
+                            new String[]{String.valueOf(params[0]),
+                                    String.valueOf(cookCursor.getLong(cookCursor.getColumnIndex(CooksTableDefinition.ID_COLUMN)))},
+                            null);
+
+                    cookCursor.close();
+
+                    if (followCursor != null && followCursor.getCount() > 0) {
+                        followId = followCursor.getLong(followCursor.getColumnIndex(
+                                FollowsTableDefinition.ID_COLUMN
+                        ));
+                        followCursor.close();
+                        return true;
+
+                    } else if (Connectivity.isNetworkAvailable(mContext)) {
+                        RestTemplate restTemplate = new RestTemplate();
+                        try {
+                            ResponseEntity<List<FollowRelationship>> response =
+                                    restTemplate.exchange(MAIN_DOMAIN_NAME + COOK_FOLLOWERS_URL.replace("{followedCook}",
+                                            cookUsername),
+                                            HttpMethod.GET, null, new ParameterizedTypeReference<List<FollowRelationship>>() {
+                                            });
+                            boolean isFollowed = false;
+                            if (response != null) {
+                                for (FollowRelationship follow : response.getBody()) {
+                                    Bundle bundle = new Bundle();
+                                    bundle.putLong("followId", follow.getId());
+                                    bundle.putLong("follower", follow.getFollower().getId());
+                                    bundle.putLong("followee", follow.getFollowee().getId());
+                                    mContext.getContentResolver().call(RecipesContentProvider.CONTENT_URI_FOLLOWS,
+                                            "saveOrUpdateFollows", null, bundle);
+                                    if(follow.getFollower().getUsername().equalsIgnoreCase(CONNECTED_COOK)){
+                                        followId = follow.getId();
+                                        isFollowed = true;
+                                    }
+                                }
+                            }
+                            return isFollowed;
+                        } catch (Exception e) {
+                            return false;
+                        }
+                    }
+                }
+                return false;
+            }
+
+            @Override
+            protected void onPostExecute(Boolean isFollowing) {
+                super.onPostExecute(isFollowing);
+                if(isFollowing){
+                    followTextView.setText(R.string.following);
+                }
+                else{
+                    followTextView.setText(R.string.follow);
+                }
+            }
+        }
+
     }
 }

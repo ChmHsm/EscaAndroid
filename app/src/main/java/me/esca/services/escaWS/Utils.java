@@ -14,5 +14,8 @@ public class Utils {
     public static String GET_LIKES_URL = "/general/recipesLikes/{recipeId}";
     public static String ADD_LIKE_TO_RECIPE_URL = "/general/recipesLikes/{recipeId}/"+ CONNECTED_COOK;
     public static String DELETE_LIKE_FROM_RECIPE_URL = "/general/recipesLikes/{likeId}";
+    public static String FOLLOW_COOK_URL = "/general/follows/"+CONNECTED_COOK+"/{followeeCook}";
+    public static String UNFOLLOW_COOK_URL = "/general/follows/{followId}";
+    public static String COOK_FOLLOWERS_URL = "/general/{followedCook}/followers";
 
 }

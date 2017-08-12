@@ -18,6 +18,7 @@ import java.security.InvalidKeyException;
 
 import me.esca.dbRelated.cook.tableUtils.CooksTableDefinition;
 import me.esca.dbRelated.RecipesDatabaseHelper;
+import me.esca.dbRelated.followRelationship.tableUtils.FollowsTableDefinition;
 import me.esca.dbRelated.image.tableUtils.ImagesTableDefinition;
 import me.esca.dbRelated.likeRelationship.tableUtils.LikesTableDefinition;
 import me.esca.dbRelated.recipe.tableUtils.RecipesTableDefinition;
@@ -44,6 +45,8 @@ public class RecipesContentProvider extends ContentProvider {
     private static final int IMAGE_ID = 22;
     private static final int LIKES = 13;
     private static final int LIKES_ID = 23;
+    private static final int FOLLOWS = 14;
+    private static final int FOLLOWS_ID = 24;
 
     private static final String AUTHORITY_RECIPES = "me.esca.recipes.contentprovider";
 
@@ -51,18 +54,13 @@ public class RecipesContentProvider extends ContentProvider {
     private static final String BASE_PATH_COOKS = "cooks";
     private static final String BASE_PATH_IMAGES = "images";
     private static final String BASE_PATH_LIKES = "likes";
+    private static final String BASE_PATH_FOLLOWS = "follows";
 
     public static final Uri CONTENT_URI_RECIPES = Uri.parse("content://" + AUTHORITY_RECIPES + "/" + BASE_PATH_RECIPES);
     public static final Uri CONTENT_URI_COOKS = Uri.parse("content://" + AUTHORITY_RECIPES + "/" + BASE_PATH_COOKS);
     public static final Uri CONTENT_URI_IMAGES = Uri.parse("content://" + AUTHORITY_RECIPES + "/" + BASE_PATH_IMAGES);
     public static final Uri CONTENT_URI_LIKES = Uri.parse("content://" + AUTHORITY_RECIPES + "/" + BASE_PATH_LIKES);
-
-//    public static final String CONTENT_TYPE_RECIPES = ContentResolver.CURSOR_DIR_BASE_TYPE + "/recipes";
-//    public static final String CONTENT_ITEM_TYPE_RECIPES = ContentResolver.CURSOR_ITEM_BASE_TYPE + "/recipe";
-//    public static final String CONTENT_TYPE_COOKS = ContentResolver.CURSOR_DIR_BASE_TYPE + "/cooks";
-//    public static final String CONTENT_ITEM_TYPE_COOKS = ContentResolver.CURSOR_ITEM_BASE_TYPE + "/cook";
-//    public static final String CONTENT_TYPE_IMAGES = ContentResolver.CURSOR_DIR_BASE_TYPE + "/images";
-//    public static final String CONTENT_ITEM_TYPE_IMAGES = ContentResolver.CURSOR_ITEM_BASE_TYPE + "/image";
+    public static final Uri CONTENT_URI_FOLLOWS = Uri.parse("content://" + AUTHORITY_RECIPES + "/" + BASE_PATH_FOLLOWS);
 
     private static final UriMatcher sURIMatcher = new UriMatcher(UriMatcher.NO_MATCH);
 
@@ -75,6 +73,8 @@ public class RecipesContentProvider extends ContentProvider {
         sURIMatcher.addURI(AUTHORITY_RECIPES, BASE_PATH_IMAGES + "/#", IMAGE_ID);
         sURIMatcher.addURI(AUTHORITY_RECIPES, BASE_PATH_LIKES, LIKES);
         sURIMatcher.addURI(AUTHORITY_RECIPES, BASE_PATH_LIKES + "/#", LIKES_ID);
+        sURIMatcher.addURI(AUTHORITY_RECIPES, BASE_PATH_FOLLOWS, FOLLOWS);
+        sURIMatcher.addURI(AUTHORITY_RECIPES, BASE_PATH_FOLLOWS + "/#", FOLLOWS_ID);
     }
 
     @Override
@@ -104,6 +104,9 @@ public class RecipesContentProvider extends ContentProvider {
             case LIKES:
                 queryBuilder.setTables(LikesTableDefinition.TABLE_NAME);
                 break;
+            case FOLLOWS:
+                queryBuilder.setTables(FollowsTableDefinition.TABLE_NAME);
+                break;
             case RECIPE_ID:
                 queryBuilder.setTables(RecipesTableDefinition.TABLE_NAME);
                 queryBuilder.appendWhere(RecipesTableDefinition.ID_COLUMN + "=" + uri.getLastPathSegment());
@@ -119,6 +122,10 @@ public class RecipesContentProvider extends ContentProvider {
             case LIKES_ID:
                 queryBuilder.setTables(LikesTableDefinition.TABLE_NAME);
                 queryBuilder.appendWhere(LikesTableDefinition.ID_COLUMN + "=" + uri.getLastPathSegment());
+                break;
+            case FOLLOWS_ID:
+                queryBuilder.setTables(FollowsTableDefinition.TABLE_NAME);
+                queryBuilder.appendWhere(FollowsTableDefinition.ID_COLUMN + "=" + uri.getLastPathSegment());
                 break;
             default:
                 throw new IllegalArgumentException("Unknown URI: " + uri);
@@ -156,6 +163,9 @@ public class RecipesContentProvider extends ContentProvider {
             case LIKES:
                 id = sqlDB.insert(LikesTableDefinition.TABLE_NAME, null, values);
                 break;
+            case FOLLOWS:
+                id = sqlDB.insert(FollowsTableDefinition.TABLE_NAME, null, values);
+                break;
             default:
                 throw new IllegalArgumentException("Unknown URI: " + uri);
         }
@@ -188,6 +198,9 @@ public class RecipesContentProvider extends ContentProvider {
                             break;
                         case LIKES:
                             id = sqlDB.insert(LikesTableDefinition.TABLE_NAME, null, value);
+                            break;
+                        case FOLLOWS:
+                            id = sqlDB.insert(FollowsTableDefinition.TABLE_NAME, null, value);
                             break;
                         default:
                             throw new IllegalArgumentException("Unknown URI: " + uri);
@@ -231,6 +244,10 @@ public class RecipesContentProvider extends ContentProvider {
                 break;
             case LIKES:
                 rowsDeleted = sqlDB.delete(LikesTableDefinition.TABLE_NAME, selection,
+                        selectionArgs);
+                break;
+            case FOLLOWS:
+                rowsDeleted = sqlDB.delete(FollowsTableDefinition.TABLE_NAME, selection,
                         selectionArgs);
                 break;
             //TODO **********Could be optimized************
@@ -290,6 +307,21 @@ public class RecipesContentProvider extends ContentProvider {
                     rowsDeleted = sqlDB.delete(
                             LikesTableDefinition.TABLE_NAME,
                             LikesTableDefinition.ID_COLUMN + "=" + id
+                                    + " and " + selection,
+                            selectionArgs);
+                }
+                break;
+            case FOLLOWS_ID:
+                id = uri.getLastPathSegment();
+                if (TextUtils.isEmpty(selection)) {
+                    rowsDeleted = sqlDB.delete(
+                            FollowsTableDefinition.TABLE_NAME,
+                            FollowsTableDefinition.ID_COLUMN + "=" + id,
+                            null);
+                } else {
+                    rowsDeleted = sqlDB.delete(
+                            FollowsTableDefinition.TABLE_NAME,
+                            FollowsTableDefinition.ID_COLUMN + "=" + id
                                     + " and " + selection,
                             selectionArgs);
                 }
@@ -398,6 +430,22 @@ public class RecipesContentProvider extends ContentProvider {
                             selectionArgs);
                 }
                 break;
+            case FOLLOWS_ID:
+                id = uri.getLastPathSegment();
+                if (TextUtils.isEmpty(selection)) {
+                    rowsUpdated = sqlDB.update(FollowsTableDefinition.TABLE_NAME,
+                            values,
+                            FollowsTableDefinition.ID_COLUMN + "=" + id,
+                            null);
+                } else {
+                    rowsUpdated = sqlDB.update(FollowsTableDefinition.TABLE_NAME,
+                            values,
+                            FollowsTableDefinition.ID_COLUMN + "=" + id
+                                    + " and "
+                                    + selection,
+                            selectionArgs);
+                }
+                break;
             default:
                 throw new IllegalArgumentException("Unknown URI: " + uri);
         }
@@ -494,6 +542,19 @@ public class RecipesContentProvider extends ContentProvider {
                     }
                 }
 
+                if (method.equals("saveOrUpdateFollows")) {
+
+                    ContentValues followEntityValues = new ContentValues();
+                    followEntityValues.put(FollowsTableDefinition.ID_COLUMN, extras.getLong("followId",-1));
+                    followEntityValues.put(FollowsTableDefinition.FOLLOWER_COLUMN, extras.getLong("follower",-1));
+                    followEntityValues.put(FollowsTableDefinition.FOLLOWEE_COLUMN, extras.getLong("followee",-1));
+                    try {
+                        saveOrUpdate(followEntityValues, uri);
+                    } catch (InvalidKeyException e) {
+                        e.printStackTrace();
+                    }
+                }
+
                 if (method.equals("bulkSaveOrUpdateRecipe")) {
 
                     ContentValues[] recipes = (ContentValues[]) extras.getSerializable("recipes");
@@ -527,6 +588,10 @@ public class RecipesContentProvider extends ContentProvider {
             case LIKES:
                 idColumn = LikesTableDefinition.ID_COLUMN;
                 baseUri = BASE_PATH_LIKES;
+                break;
+            case FOLLOWS:
+                idColumn = FollowsTableDefinition.ID_COLUMN;
+                baseUri = BASE_PATH_FOLLOWS;
                 break;
         }
 

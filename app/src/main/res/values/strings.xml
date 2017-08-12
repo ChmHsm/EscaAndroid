@@ -16,6 +16,8 @@
     <string name="cook_default_name">Gordon</string>
     <string name="recipe">Recipe</string>
     <string name="follow">Follow</string>
+    <string name="following">Following</string>
+
     <string name="recipe_title_hint">Recipe title</string>
     <string name="recipe_ingredients_hint">Ingredients</string>
     <string name="recipe_instructions_hint">Instructions</string>
