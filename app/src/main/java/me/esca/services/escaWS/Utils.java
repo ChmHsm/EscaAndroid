@@ -17,5 +17,6 @@ public class Utils {
     public static String FOLLOW_COOK_URL = "/general/follows/"+CONNECTED_COOK+"/{followeeCook}";
     public static String UNFOLLOW_COOK_URL = "/general/follows/{followId}";
     public static String COOK_FOLLOWERS_URL = "/general/{followedCook}/followers";
+    public static String COOK_FOLLOWEES_URL = "/general/{followeeCook}/followees";
 
 }

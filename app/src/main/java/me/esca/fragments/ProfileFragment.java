@@ -3,9 +3,11 @@ package me.esca.fragments;
 import android.app.Fragment;
 import android.app.LoaderManager;
 import android.content.CursorLoader;
+import android.content.Intent;
 import android.content.Loader;
 import android.database.Cursor;
 import android.database.MatrixCursor;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.GridLayoutManager;
@@ -16,10 +18,18 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import me.esca.R;
 import me.esca.adapters.ProfileRecipesAdapter;
 import me.esca.dbRelated.contentProvider.RecipesContentProvider;
+import me.esca.dbRelated.cook.tableUtils.CooksTableDefinition;
+import me.esca.dbRelated.followRelationship.tableUtils.FollowsTableDefinition;
 import me.esca.dbRelated.recipe.tableUtils.RecipesTableDefinition;
+import me.esca.model.FollowRelationship;
+
+import static me.esca.services.escaWS.Utils.CONNECTED_COOK;
 
 /**
  * Created by Me on 18/06/2017.
@@ -30,6 +40,8 @@ public class ProfileFragment extends Fragment implements LoaderManager.LoaderCal
 
     private RecyclerView mRecyclerView;
     private TextView numberOfCookRecipes;
+    private TextView numberOfFollowersTextView;
+    private TextView numberOfFolloweesTextView;
 
     @Nullable
     @Override
@@ -45,9 +57,18 @@ public class ProfileFragment extends Fragment implements LoaderManager.LoaderCal
         mRecyclerView.setLayoutManager(mLayoutManager);
         mRecyclerView.setAdapter(mAdapter);
         numberOfCookRecipes = (TextView) view.findViewById(R.id.number_of_cook_recipes);
+        numberOfFollowersTextView = (TextView) view.findViewById(R.id.followers_nbr_text_view);
+        numberOfFolloweesTextView = (TextView) view.findViewById(R.id.followees_nbr_text_view);
         getLoaderManager().initLoader(1, null, this);
 
         return view;
+    }
+
+    @Override
+    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        new GetFollowers().execute(CONNECTED_COOK);
+        new GetFollowees().execute(CONNECTED_COOK);
     }
 
     @Override
@@ -111,5 +132,98 @@ public class ProfileFragment extends Fragment implements LoaderManager.LoaderCal
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
 
+    }
+
+    private class GetFollowers extends AsyncTask<String, Integer, Integer>{
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+        }
+
+        @Override
+        protected Integer doInBackground(String... params) {
+
+            Integer followersNumber = 0;
+
+            Cursor cookCursor = getActivity().getContentResolver()
+                    .query(RecipesContentProvider.CONTENT_URI_COOKS,
+                            new String[]{CooksTableDefinition.ID_COLUMN},
+                            CooksTableDefinition.USERNAME_COLUMN + " like ?",
+                            new String[]{CONNECTED_COOK},
+                            null);
+
+            //TODO Add getting directly from WS first if connected
+            if (cookCursor != null && cookCursor.getCount() > 0) {
+                cookCursor.moveToNext();
+                Cursor followCursor = getActivity().getContentResolver().query(RecipesContentProvider.CONTENT_URI_FOLLOWS,
+                        null, FollowsTableDefinition.FOLLOWEE_COLUMN + " = ? ",
+                        new String[]{String.valueOf(cookCursor
+                                .getLong(cookCursor.getColumnIndex(CooksTableDefinition.ID_COLUMN)))},
+                        null);
+
+                cookCursor.close();
+
+                if (followCursor != null && followCursor.getCount() > 0) {
+                    followCursor.moveToNext();
+                    followersNumber = followCursor.getCount();
+                    followCursor.close();
+                    return followersNumber;
+                }
+            }
+            return followersNumber;
+        }
+
+        @Override
+        protected void onPostExecute(Integer numberOfFollowers) {
+            super.onPostExecute(numberOfFollowers);
+            numberOfFollowersTextView.setText(String.valueOf(numberOfFollowers));
+        }
+    }
+
+    private class GetFollowees extends AsyncTask<String, Integer, Integer>{
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+        }
+
+        @Override
+        protected Integer doInBackground(String... params) {
+
+            Integer numberOfFollowees = 0;
+
+            Cursor cookCursor = getActivity().getContentResolver()
+                    .query(RecipesContentProvider.CONTENT_URI_COOKS,
+                            new String[]{CooksTableDefinition.ID_COLUMN},
+                            CooksTableDefinition.USERNAME_COLUMN + " like ?",
+                            new String[]{CONNECTED_COOK},
+                            null);
+
+            //TODO Add getting directly from WS first if connected
+            if (cookCursor != null && cookCursor.getCount() > 0) {
+                cookCursor.moveToNext();
+                Cursor followCursor = getActivity().getContentResolver().query(RecipesContentProvider.CONTENT_URI_FOLLOWS,
+                        null, FollowsTableDefinition.FOLLOWER_COLUMN + " = ?",
+                        new String[]{String.valueOf(cookCursor
+                                .getLong(cookCursor.getColumnIndex(CooksTableDefinition.ID_COLUMN)))},
+                        null);
+
+                cookCursor.close();
+
+                if (followCursor != null && followCursor.getCount() > 0) {
+                    followCursor.moveToNext();
+                    numberOfFollowees = followCursor.getCount();
+                    followCursor.close();
+                }
+            }
+            return numberOfFollowees;
+        }
+
+        @Override
+        protected void onPostExecute(Integer numberOfFollowees) {
+            super.onPostExecute(numberOfFollowees);
+            numberOfFolloweesTextView.setText(String.valueOf(numberOfFollowees));
+        }
     }
 }

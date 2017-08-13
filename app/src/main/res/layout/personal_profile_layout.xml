@@ -58,7 +58,7 @@
                 android:layout_weight="1">
 
                 <TextView
-                    android:id="@+id/textView6"
+                    android:id="@+id/followers_nbr_text_view"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/random_number"
@@ -81,7 +81,7 @@
                 android:layout_weight="1">
 
                 <TextView
-                    android:id="@+id/textView7"
+                    android:id="@+id/followees_nbr_text_view"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/random_number"

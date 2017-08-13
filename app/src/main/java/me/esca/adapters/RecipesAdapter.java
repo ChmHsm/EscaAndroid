@@ -536,34 +536,30 @@ public class RecipesAdapter extends CursorRecyclerViewAdapter {
                 if (followRelationship != null) {
                     followId = followRelationship.getId();
                     followTextView.setText(R.string.following);
+                    followTextView.setTextColor(mContext.getColor(R.color.colorAccent));
+                    followTextView.setBackgroundColor(
+                            mContext.getColor(R.color.white));
+                    followTextView.setElevation(0);
 
-                    Cursor followCursor = mContext.getContentResolver().query(
-                            Uri.parse(RecipesContentProvider.CONTENT_URI_FOLLOWS + "/" + followRelationship.getId()),
-                            null, null,
-                            null,
+                    Cursor cookFollowCursor = mContext.getContentResolver().query(
+                            RecipesContentProvider.CONTENT_URI_COOKS,
+                            new String[]{CooksTableDefinition.ID_COLUMN},
+                            CooksTableDefinition.USERNAME_COLUMN + " like ?",
+                            new String[]{CONNECTED_COOK},
                             null);
-                    if (followCursor != null && followCursor.getCount() > 0) {
+                    if (cookFollowCursor != null && cookFollowCursor.getCount() > 0) {
+                        cookFollowCursor.moveToNext();
+                        Long cookId = cookFollowCursor.getLong(cookFollowCursor
+                                .getColumnIndex(CooksTableDefinition.ID_COLUMN));
 
-                        Cursor cookFollowCursor = mContext.getContentResolver().query(
-                                RecipesContentProvider.CONTENT_URI_COOKS,
-                                new String[]{CooksTableDefinition.ID_COLUMN},
-                                CooksTableDefinition.USERNAME_COLUMN + " like ?",
-                                new String[]{"'" + CONNECTED_COOK + "'"},
-                                null);
-                        if (cookFollowCursor != null && cookFollowCursor.getCount() > 0) {
-                            cookFollowCursor.moveToNext();
-                            Long cookId = cookFollowCursor.getLong(cookFollowCursor
-                                    .getColumnIndex(CooksTableDefinition.ID_COLUMN));
+                        Bundle bundle = new Bundle();
+                        bundle.putString("uri", RecipesContentProvider.CONTENT_URI_FOLLOWS.toString());
+                        bundle.putLong("followId", followRelationship.getId());
+                        bundle.putLong("follower", cookId);
+                        bundle.putLong("followee", recipesCookId);
 
-                            Bundle bundle = new Bundle();
-                            bundle.putString("uri", RecipesContentProvider.CONTENT_URI_FOLLOWS.toString());
-                            bundle.putLong("followId", followRelationship.getId());
-                            bundle.putLong("follower", cookId);
-                            bundle.putLong("followee", recipesCookId);
-
-                            mContext.getContentResolver().call(RecipesContentProvider.CONTENT_URI_LIKES,
-                                    "saveOrUpdateFollows", null, bundle);
-                        }
+                        mContext.getContentResolver().call(RecipesContentProvider.CONTENT_URI_LIKES,
+                                "saveOrUpdateFollows", null, bundle);
                     }
                 }
             }
@@ -588,8 +584,6 @@ public class RecipesAdapter extends CursorRecyclerViewAdapter {
                     try {
                         restTemplate.delete(MAIN_DOMAIN_NAME + UNFOLLOW_COOK_URL.replace("{followId}",
                                 String.valueOf(params[0])), null, null);
-
-
                     } catch (Exception e) {
                         ((Activity) mContext).runOnUiThread(new Runnable() {
                             @Override
@@ -600,6 +594,9 @@ public class RecipesAdapter extends CursorRecyclerViewAdapter {
                         });
                     }
                 }
+                else{
+                    //TODO Notify not connected
+                }
                 return true;
             }
 
@@ -607,7 +604,17 @@ public class RecipesAdapter extends CursorRecyclerViewAdapter {
             protected void onPostExecute(Boolean isSuccess) {
                 super.onPostExecute(isSuccess);
                 if (isSuccess) {
+                    mContext.getContentResolver().delete(
+                            RecipesContentProvider.CONTENT_URI_FOLLOWS
+                                    .buildUpon().appendPath(String.valueOf(followId)).build(),
+                            null, null
+                    );
+                    followId = 0;
                     followTextView.setText(R.string.follow);
+                    followTextView.setTextColor(mContext.getColor(R.color.white));
+                    followTextView.setBackgroundColor(
+                            mContext.getColor(R.color.colorAccent));
+                    followTextView.setElevation(4);
                 }
             }
         }
@@ -641,6 +648,7 @@ public class RecipesAdapter extends CursorRecyclerViewAdapter {
                     cookCursor.close();
 
                     if (followCursor != null && followCursor.getCount() > 0) {
+                        followCursor.moveToNext();
                         followId = followCursor.getLong(followCursor.getColumnIndex(
                                 FollowsTableDefinition.ID_COLUMN
                         ));
@@ -664,7 +672,7 @@ public class RecipesAdapter extends CursorRecyclerViewAdapter {
                                     bundle.putLong("followee", follow.getFollowee().getId());
                                     mContext.getContentResolver().call(RecipesContentProvider.CONTENT_URI_FOLLOWS,
                                             "saveOrUpdateFollows", null, bundle);
-                                    if(follow.getFollower().getUsername().equalsIgnoreCase(CONNECTED_COOK)){
+                                    if (follow.getFollower().getUsername().equalsIgnoreCase(CONNECTED_COOK)) {
                                         followId = follow.getId();
                                         isFollowed = true;
                                     }
@@ -682,11 +690,18 @@ public class RecipesAdapter extends CursorRecyclerViewAdapter {
             @Override
             protected void onPostExecute(Boolean isFollowing) {
                 super.onPostExecute(isFollowing);
-                if(isFollowing){
+                if (isFollowing) {
                     followTextView.setText(R.string.following);
-                }
-                else{
+                    followTextView.setBackgroundColor(
+                            mContext.getColor(R.color.white));
+                    followTextView.setTextColor(mContext.getColor(R.color.colorAccent));
+                    followTextView.setElevation(0);
+                } else {
                     followTextView.setText(R.string.follow);
+                    followTextView.setBackgroundColor(
+                            mContext.getColor(R.color.colorAccent));
+                    followTextView.setTextColor(mContext.getColor(R.color.white));
+                    followTextView.setElevation(4);
                 }
             }
         }
