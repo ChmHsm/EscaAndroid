@@ -19,11 +19,21 @@ android {
     }
 
     packagingOptions {
-        exclude 'META-INF/ASL2.0'
+        exclude 'META-INF/DEPENDENCIES.txt'
+        exclude 'META-INF/DEPENDENCIES'
+        exclude 'META-INF/dependencies.txt'
+        exclude 'META-INF/LICENSE.txt'
         exclude 'META-INF/LICENSE'
         exclude 'META-INF/license.txt'
+        exclude 'META-INF/LGPL2.1'
+        exclude 'META-INF/NOTICE.txt'
         exclude 'META-INF/NOTICE'
         exclude 'META-INF/notice.txt'
+        exclude 'META-INF/INDEX.LIST'
+        exclude 'META-INF/spring.tooling'
+        exclude 'META-INF/spring.handlers'
+        exclude 'META-INF/spring.schemas'
+        exclude 'META-INF/ASL2.0'
     }
     dataBinding {
         enabled = true
@@ -56,6 +66,8 @@ dependencies {
     compile 'com.github.varunest:sparkbutton:1.0.5'
     compile 'com.github.castorflex.smoothprogressbar:library-circular:1.2.0'
     compile 'com.mikhaellopez:circularfillableloaders:1.2.0'
+    compile group: 'org.springframework.security.oauth', name: 'spring-security-oauth2', version: '1.0.0.RELEASE'
+
 }
 
 
