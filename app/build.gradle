@@ -66,7 +66,7 @@ dependencies {
     compile 'com.github.varunest:sparkbutton:1.0.5'
     compile 'com.github.castorflex.smoothprogressbar:library-circular:1.2.0'
     compile 'com.mikhaellopez:circularfillableloaders:1.2.0'
-    compile group: 'org.springframework.security.oauth', name: 'spring-security-oauth2', version: '1.0.0.RELEASE'
+    compile 'ca.mimic:oauth2library:2.3.0'
 
 }
 

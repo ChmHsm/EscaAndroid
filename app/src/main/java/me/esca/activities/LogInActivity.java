@@ -8,28 +8,11 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 
-import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.converter.HttpMessageConverter;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
-import org.springframework.security.oauth2.client.DefaultOAuth2ClientContext;
-import org.springframework.security.oauth2.client.OAuth2RestTemplate;
-import org.springframework.security.oauth2.client.token.grant.client.ClientCredentialsResourceDetails;
-import org.springframework.security.oauth2.client.token.grant.password.ResourceOwnerPasswordResourceDetails;
-import org.springframework.security.oauth2.common.AuthenticationScheme;
-
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
+import java.io.IOException;
+import ca.mimic.oauth2library.OAuth2Client;
+import ca.mimic.oauth2library.OAuthResponse;
 import me.esca.R;
-import me.esca.model.Recipe;
 import me.esca.utils.security.authentication.Message;
-
-import static java.util.Arrays.asList;
-import static me.esca.services.escaWS.Utils.ALL_RECIPES_URL;
-import static me.esca.services.escaWS.Utils.MAIN_DOMAIN_NAME;
 
 
 /**
@@ -75,26 +58,19 @@ public class LogInActivity extends Activity {
         @Override
         protected Message doInBackground(Void... params) {
 
-                ResourceOwnerPasswordResourceDetails resourceDetails = new ResourceOwnerPasswordResourceDetails();
-            resourceDetails.setUsername(username);
-            resourceDetails.setPassword(password);
-            resourceDetails.setTokenName("token");
-            resourceDetails.setAccessTokenUri("http://escaws.herokuapp.com/oauth/token");
-            resourceDetails.setClientId("android-escaAndroid");
-            resourceDetails.setClientSecret("123456");
-            resourceDetails.setGrantType("authorization_code");
-            resourceDetails.setScope(asList("write"));
-            resourceDetails.setAuthenticationScheme(AuthenticationScheme.header);
+            OAuth2Client.Builder builder = new OAuth2Client.Builder("android-escaAndroid", "123456",
+                    "http://escaws.herokuapp.com/oauth/token")
+                    .grantType("password")
+                    .scope("write")
+                    .username(username)
+                    .password(password);
 
-
-            DefaultOAuth2ClientContext clientContext = new DefaultOAuth2ClientContext();
-
-            OAuth2RestTemplate restTemplate = new OAuth2RestTemplate(resourceDetails, clientContext);
-//            List<HttpMessageConverter<?>> messageConvertersList = new ArrayList<>();
-//            messageConvertersList.add(new MappingJackson2HttpMessageConverter());
-//            restTemplate.setMessageConverters(messageConvertersList);
-
-            restTemplate.getAccessToken();
+            try {
+                OAuthResponse response = builder.build().requestAccessToken();
+                String accessToken = response.getAccessToken();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
 
             return null;
         }
